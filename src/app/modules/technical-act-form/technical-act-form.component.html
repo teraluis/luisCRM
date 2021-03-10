@@ -1,0 +1,100 @@
+<form [formGroup]="technicalActForm" (ngSubmit)="save()">
+  <div class="two-column-grid">
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code prestation</mat-label>
+        <input matInput formControlName="name" required (change)="notSingle()">
+      </mat-form-field>
+      <span *ngIf="notSingle()" style="color: red; font-family: Arial,sans-serif; font-size: 10px;left: -110px;position: relative">Le code n'est pas unique</span>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Raccourci</mat-label>
+        <input matInput  [formControl]="shortcutControl"
+               [matAutocomplete]="autoshort" maxlength="5" required>
+        <mat-autocomplete autoActiveFirstOption #autoshort="matAutocomplete">
+          <mat-option *ngFor="let option of shortcutFilteredOptions | async" [value]="option">
+            {{option}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>TVA *</mat-label>
+        <mat-select formControlName="tva">
+          <mat-option *ngFor="let tva of tvaEnum" [value]="tva">{{getProfilTva(tva)}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Id GéoConcept</mat-label>
+        <input matInput formControlName="schedulerId" required>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Description</mat-label>
+        <input matInput formControlName="description" required>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Actif *</mat-label>
+        <mat-select formControlName="active">
+          <mat-option value="true">oui</mat-option>
+          <mat-option value="false">non</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Périmetre</mat-label>
+        <input matInput formControlName="surfaceType" required>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Type</mat-label>
+        <input matInput [formControl]="typeControl"
+               [matAutocomplete]="auto"  required>
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+          <mat-option *ngFor="let option of typeFilteredOptions | async" [value]="option">
+            {{option}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Classement métier</mat-label>
+        <input matInput formControlName="jobRank" required>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 50%">
+        <mat-label>Métier vue finance *</mat-label>
+        <input matInput  formControlName="businessCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 50%">
+        <mat-label>Métier vue expertise *</mat-label>
+        <input matInput formControlName="jobExpertise" >
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code offre</mat-label>
+        <input matInput formControlName="offerCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>web *</mat-label>
+        <mat-select formControlName="web">
+          <mat-option value="true">oui</mat-option>
+          <mat-option value="false">non</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+  <section class="bigger-form-field grey" style="padding-top: 4px">
+    <mat-checkbox color="accent" formControlName="hasAnalyse">
+      Contient des analyses
+    </mat-checkbox>
+  </section>
+  <mat-form-field style="width: 100%; margin: 0;" appearance="outline">
+    <mat-label>Commentaire</mat-label>
+    <textarea placeholder="saissisez votre commentaire" rows="1" cols="33"
+              matInput
+              formControlName="comment"
+              style="width: 100%;" class="textArea">commentaire ...</textarea>
+  </mat-form-field>
+  <div class="form-bottom-actions" style="margin-bottom: 0px">
+    <div class="form-bottom-actions-right grey">
+      <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button type="submit" mat-flat-button color="primary" [disabled]="saving || isComplete()">
+        Enregistrer</button>
+    </div>
+  </div>
+</form>

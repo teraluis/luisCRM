@@ -1,0 +1,18 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<mat-tab-group>
+  <mat-tab label="Produit">
+    <app-products-form
+      [data]="data"
+      [newUpdate]="updated"
+      (cancelAction)="close()"
+      (productSaved)="close($event)"
+    ></app-products-form>
+  </mat-tab>
+  <mat-tab label="Type de produit">
+    <app-product-type-form (cancelAction)="close()" (added)="update($event)"></app-product-type-form>
+  </mat-tab>
+  <mat-tab label="Périmètre / Surface">
+    <app-surface-type-form (cancelAction)="close()" (added)="update($event)"></app-surface-type-form>
+  </mat-tab>
+</mat-tab-group>
+

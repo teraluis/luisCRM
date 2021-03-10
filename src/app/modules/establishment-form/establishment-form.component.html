@@ -1,0 +1,123 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+<div *ngIf="!loading">
+  <div *ngIf="data.mode === mode.SEARCH">
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+      <mat-label>Rôle *</mat-label>
+      <mat-select [ngClass]="data.disabled || data.disabledRole ? '' : 'grey-select'" [(ngModel)]="currentData.role" [disabled]="data.disabled || data.disabledRole">
+        <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" style="margin-bottom: 15px;">
+      <mat-label>Rechercher</mat-label>
+      <input matInput [formControl]="search" [matAutocomplete]="auto" [disabled]="data.disabled">
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngFor="let e of suggestedEstablishment" [value]="e.name" (click)="currentData.establishment = e; establishmentForm.markAsDirty()">
+        <span class="grey" style="display: flex; width: 100%;">
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{e.name}}</span>
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{e.siret}}</span>
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{e.description}}</span>
+          <span style="width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{getAddressName(e.address)}}</span>
+        </span>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <div class="form-bottom-actions" *ngIf="!data.disabled">
+      <div class="form-bottom-actions-right grey">
+        <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+        <button mat-flat-button color="primary" [disabled]="saving || !(currentData.establishment && currentData.establishment.uuid)"
+                (click)="save()">{{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="data.mode === mode.CREATE || data.mode === mode.EDIT">
+    <mat-horizontal-stepper linear #stepper [ngClass]="data.inStep || data.mode === mode.EDIT || (data.mode === mode.CREATE && !!data.defaultEntity) ? 'stepper-hidden' : 'stepper-disabled'">
+      <mat-step label="{{entity && entity.uuid ? 'Compte: ' + entity.name : 'Rechercher un compte'}}" *ngIf="data.mode === mode.CREATE && !data.defaultEntity">
+        <app-account-form [data]="{mode: 'create_or_search', inStep: true, forceType: proType}"
+                          (accountSaved)="selectAccount($event)" (cancelAction)="cancel()"></app-account-form>
+      </mat-step>
+      <mat-step label="Informations de l'établissement">
+        <form [formGroup]="establishmentForm">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+            <mat-label>Rôle *</mat-label>
+            <mat-select [ngClass]="data.disabledRole ? '' : 'grey-select'" formControlName="role">
+              <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="two-column-grid" style="margin-top: 30px;">
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Nom *</mat-label>
+                <input matInput formControlName="establishmentName">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Activité *</mat-label>
+                <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" formControlName="activity" (selectionChange)="changeActivity($event)">
+                  <mat-option class="grey" *ngFor="let activity of activityList" [value]="activity">{{getActivityName(activity)}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Facturation des analyses *</mat-label>
+                <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" formControlName="facturationAnalysis">
+                  <mat-option class="grey" *ngFor="let type of facturationAnalysis" [value]="type">{{type}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>E-mail</mat-label>
+                <input matInput formControlName="establishmentMail">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Téléphone</mat-label>
+                <input matInput formControlName="establishmentPhone">
+              </mat-form-field>
+            </div>
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Raison sociale *</mat-label>
+                <input matInput formControlName="establishmentCorporateName">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 70%;">
+                <mat-label>SIREN</mat-label>
+                <input matInput formControlName="siren">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 30%;">
+                <mat-label>NIC *</mat-label>
+                <input matInput placeholder="5 caractères" formControlName="nicNumber" (ngModelChange)="checkSiretValidity()">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Agence *</mat-label>
+                <mat-select formControlName="agency" [ngClass]="data.disabled ? '' : 'grey-select'"
+                            (selectionChange)="setAgency($event)">
+                  <mat-option class="grey" *ngFor="let agency of agencyList" [value]="agency">{{getAgencyName(agency)}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 70%;">
+                <mat-label>IBAN *</mat-label>
+                <input matInput placeholder="FR..." formControlName="establishmentIban">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="grey" style="width: 30%;">
+                <mat-label>BIC *</mat-label>
+                <input  matInput formControlName="establishmentBic">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Description</mat-label>
+                <textarea matInput matTextareaAutosize matAutosizeMinRows="1" formControlName="establishmentDescription" matAutosizeMaxRows="5"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="form-bottom-actions" *ngIf="!data.disabled">
+            <div class="form-bottom-actions-left grey" *ngIf="data.mode === mode.EDIT && data.deletable">
+              <button mat-flat-button class="red-delete-button" [disabled]="saving" (click)="delete(currentData)">Supprimer</button>
+            </div>
+            <div class="form-bottom-actions-right grey">
+              <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="back()">{{stepper.selectedIndex === 0 ? 'Annuler' : 'Précédent'}}</button>
+              <button type="button"  mat-flat-button color="primary" [disabled]="saving|| !(this.establishmentForm.dirty && this.establishmentForm.valid)" (click)="save();">
+                Enregistrer
+                <mat-spinner *ngIf="establishmentLoading" [diameter]="30" style="position: absolute; bottom: 2.5px; left: 25px;"></mat-spinner>
+              </button>
+            </div>
+          </div>
+        </form>
+      </mat-step>
+    </mat-horizontal-stepper>
+  </div>
+</div>

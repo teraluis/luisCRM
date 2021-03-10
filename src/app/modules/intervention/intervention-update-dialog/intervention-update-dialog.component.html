@@ -1,0 +1,31 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading || saving"></mat-progress-bar>
+
+<div mat-dialog-title class="color-primary">Mettre à jour le statut de l'intervention</div>
+
+<div mat-dialog-content>
+  <h3 class="mat-h3" style="font-size: 13px;">{{getStatusName(inputStatus)}}&nbsp;>>&nbsp;{{getStatusName(outputStatus)}}</h3>
+
+  <h3 class="mat-h3" style="font-size: 13px;">Renseignements sur l'intervention</h3>
+
+  <app-datefield [inputName]="'Date d\'intervention*'"
+                 [initialValue]="updateInfo.interventionDate"
+                 [disabled]="saving || !!interventionParameters.interventionDate"
+                 (valueChangeOutput)="changeInterventionDate($event)"></app-datefield>
+
+  <app-datefield [inputName]="'Date de clôture*'"
+                 [initialValue]="updateInfo.closureDate"
+                 [disabled]="saving || !!interventionParameters.closureDate"
+                 (valueChangeOutput)="changeClosureDate($event)"></app-datefield>
+
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+    <mat-label>Nom de l'expert*</mat-label>
+    <input style="font-size: 12px;" matInput [(ngModel)]="this.updateInfo.expertLabel" [disabled]="saving || !!interventionParameters.expertLabel">
+  </mat-form-field>
+
+</div>
+
+<div mat-dialog-actions style="justify-content: flex-end;">
+  <button mat-button style="margin-right: 7px; background-color: white;" [disabled]="saving" mat-dialog-close>Annuler</button>
+  <button mat-flat-button color="primary" [disabled]="saving || !canSave()" (click)="save()">Enregistrer</button>
+</div>
+

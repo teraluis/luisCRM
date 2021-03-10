@@ -1,0 +1,8 @@
+<div *ngIf="!loading">
+  <app-table-search-list style="display: flex" [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                         [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading" (selectionChange)="setSelectedEstate($event)"
+                         (pageData)="setPageData($event)" (filterData)="setFilterData($event)" (clickEvent)="clickEvent($event)" [comboList]="getComboList"></app-table-search-list>
+  <div *ngIf="isEmpty" style="text-align: center; margin-top: 30px;">
+    <span style="color: #E2E2E3; font-style: italic; font-size: 30px;">Aucun bien n'est assigné à la commande</span>
+  </div>
+</div>

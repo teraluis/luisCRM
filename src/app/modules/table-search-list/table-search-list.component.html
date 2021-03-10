@@ -1,0 +1,282 @@
+<div class="item-table-wrapper">
+  <div style="display: flex;">
+    <div class="grey" style="margin-right: auto; width: 30%;">
+      <button mat-stroked-button style="margin-bottom: 10px; margin-left: 10px;" (click)="resetFilters()" *ngIf="isFiltered">
+        <mat-icon style="margin-left: -5px; margin-right: 5px;">close</mat-icon>
+        <span style="font-size: 14px;">Réinitialiser les filtres</span>
+      </button>
+      <button mat-stroked-button style="margin-bottom: 10px; margin-left: 10px;" (click)="setFilterPage(true)" *ngIf="!isFiltered">
+        <mat-icon style="margin-left: -5px; margin-right: 5px;">search</mat-icon>
+        <span style="font-size: 14px;">Mode recherche</span>
+      </button>
+    </div>
+    <div style="margin: auto; width: 30%; text-align: center;" *ngIf="!isLoading && createAction && !createAction.hidden">
+      <button mat-flat-button color="primary" style="margin-bottom: 10px;" [disabled]="createAction.disabled" (click)="createAction.create()">
+        {{createAction.label}}
+        <mat-icon style="margin-right: -5px; margin-left: 5px;">add</mat-icon>
+      </button>
+    </div>
+    <div style="margin-left: auto; width: 30%; text-align: end; margin-right: 10px;">
+      <button mat-icon-button (click)="showOptions()" *ngIf="options.includes(optionTypes.REORDER)">
+        <mat-icon class="grey">reorder</mat-icon>
+      </button>
+    </div>
+  </div>
+  <table mat-table [dataSource]="isLoading ? [] : dataSource" matSort [matSortDisabled]="!isFiltered" (matSortChange)="sortData($event)" style="display: inline-block; float: left; width: 100%; overflow-x: auto;">
+    <ng-container matColumnDef="opt_start" sticky>
+      <th mat-header-cell *matHeaderCellDef style="padding: 0 10px; height: 70px; box-shadow: 5px 0 5px -5px #BDBDBD;">
+        <div *ngIf="options.includes(optionTypes.SELECT)">
+          <mat-checkbox class="checkbox" (change)="$event ? masterToggle() : null; selectionChange.emit(selection);"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()"
+                        [aria-label]="checkboxLabel()">
+          </mat-checkbox>
+        </div>
+      </th>
+      <td mat-cell *matCellDef="let element" style="padding: 0 10px; border: none; box-shadow: 5px 0 5px -5px #BDBDBD;">
+        <div style="display: flex;">
+          <div *ngIf="options.includes(optionTypes.SELECT)">
+            <mat-checkbox class="checkbox"
+                          (click)="$event.stopPropagation()"
+                          (change)="$event ? selection.toggle(element) : null; selectionChange.emit(selection);"
+                          [checked]="selection.isSelected(element)"
+                          [aria-label]="checkboxLabel(element)">
+            </mat-checkbox>
+          </div>
+          <div *ngIf="options.includes(optionTypes.PICK)">
+            <mat-checkbox class="checkbox"
+                          (click)="$event.stopPropagation()"
+                          (change)="togglePick($event, element)"
+                          [checked]="selection.isSelected(element)"
+                          [aria-label]="checkboxLabel(element)">
+            </mat-checkbox>
+          </div>
+          <div *ngIf="options.includes(optionTypes.FAVORITE)">
+            <mat-checkbox class="checkbox-favorite"
+                          (click)="$event.stopPropagation()"
+                          (change)="$event ? favorite.toggle(element) : null; favoriteChange.emit(favorite);"
+                          [checked]="favorite.isSelected(element)"
+                          [aria-label]="checkboxLabel(element)"><mat-icon *ngIf="!favorite.isSelected(element)" style="color: gold;">star_border</mat-icon><mat-icon *ngIf="favorite.isSelected(element)" style="color: gold;">star</mat-icon>
+            </mat-checkbox>
+          </div>
+          <div *ngIf="element.lineIcon && element.lineIcon.icon">
+            <div style="display: flex; width: 35px;">
+              <mat-icon class="grey" style="margin: auto auto auto 10px;" matTooltip="{{element.lineIcon.tooltip}}">{{element.lineIcon.icon}}</mat-icon>
+            </div>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+    <ng-container *ngFor="let column of columnsInfos" matColumnDef="{{column.name}}">
+      <th mat-header-cell *matHeaderCellDef style="height: 70px; padding-left: 10px;" [ngStyle]="{'width' : (100 / nbColumns) + '%' , 'max-width' : column.maxWidthPx ? column.maxWidthPx.toString() + 'px' : 'unset'}"> <!--width: 100%; [ngStyle]="{'min-width' : column.width.toString()+'vw', 'max-width' : column.width.toString()+'vw'}"-->
+        <div [ngSwitch]="column.filterType">
+          <div *ngSwitchCase="filterTypes.COMBO">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <mat-select matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                          [(ngModel)]="filter[column.name]" (selectionChange)="applyFilter(column.name, column.filterType, $event.value)"
+                          [disabled]="!isFiltered || column.filterDisabled" multiple>
+                <mat-option *ngFor="let combo of currentComboList[column.name]" [value]="combo">{{combo}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div *ngSwitchCase="filterTypes.CHECK">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <mat-select matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                          [(ngModel)]="filter[column.name]" (click)="unselect(column.name, column.filterType)" (selectionChange)="applyFilter(column.name, column.filterType, $event.value)"
+                          [disabled]="!isFiltered || column.filterDisabled">
+                <mat-option *ngFor="let combo of currentComboList[column.name]" [value]="combo">{{combo}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div *ngSwitchCase="filterTypes.BOOLEAN">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <mat-select matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                          [(ngModel)]="filter[column.name]" (click)="unselect(column.name, column.filterType)" (selectionChange)="applyFilter(column.name, column.filterType, $event.value)"
+                          [disabled]="!isFiltered || column.filterDisabled">
+                <mat-option [value]="true">oui</mat-option>
+                <mat-option [value]="false">non</mat-option>
+                <mat-option [value]="undefined">-</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div *ngSwitchCase="filterTypes.STATUS">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <input matInput matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                     *ngIf="column.filterDisabled" [disabled]="!isFiltered || column.filterDisabled">
+              <mat-select [(ngModel)]="filter[column.name]" *ngIf="!column.filterDisabled"
+                          (click)="unselect(column.name, column.filterType)" [disabled]="!isFiltered || column.filterDisabled">
+                <mat-option *ngFor="let status of currentStatusList" [value]="status.name"
+                            (click)="applyFilter(column.name, column.filterType, status.name)">{{status.value}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div *ngSwitchCase="filterTypes.DATE" mat-sort-header="{{column.name}}" class="sort-header">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <input matInput matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                     [(ngModel)]="filter[column.name]" (keyup)="applyFilter(column.name, column.filterType, $event.target.value)"
+                     [disabled]="!isFiltered || column.filterDisabled">
+            </mat-form-field>
+          </div>
+          <div *ngSwitchCase="filterTypes.DATE_SHORT" mat-sort-header="{{column.name}}" class="sort-header">
+            <mat-form-field style="width: 100%;">
+              <mat-label >{{column.title}}</mat-label>
+              <input matInput matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                     [(ngModel)]="filter[column.name]" (keyup)="applyFilter(column.name, column.filterType, $event.target.value)"
+                     [disabled]="!isFiltered || column.filterDisabled">
+            </mat-form-field>
+          </div>
+          <div *ngSwitchDefault>
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{column.title}}</mat-label>
+              <input matInput matTooltip="{{column.headerToolTip}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.headerToolTip}}"
+                     [(ngModel)]="filter[column.name]" (keyup)="applyFilter(column.name, column.filterType, $event.target.value)" (focusout)="this.suggestedValues = []"
+                     [disabled]="!isFiltered || column.filterDisabled" [matAutocomplete]="suggestion">
+              <mat-autocomplete #suggestion="matAutocomplete" [panelWidth]="200">
+                <mat-option *ngFor="let value of suggestedValues" [value]="value">{{value}}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+        </div>
+      </th>
+      <td mat-cell *matCellDef="let element" style="padding-left: 10px; margin-right: auto;" [ngStyle]="{'width' : (100 / nbColumns) + '%' , 'max-width' : column.maxWidthPx ? column.maxWidthPx.toString() + 'px' : 'unset'}">
+        <div *ngIf="element.hasError"></div>
+        <div *ngIf="!element.hasError">
+          <div [ngSwitch]="column.filterType" class="grey">
+            <div *ngSwitchCase="filterTypes.DATE" style="overflow: hidden; text-overflow: ellipsis;">
+              {{element[column.name] | date: 'dd/MM/yyyy HH:mm:ss'}}
+            </div>
+            <div *ngSwitchCase="filterTypes.NUMBER" style="text-align: center; overflow: hidden; text-overflow: ellipsis;">
+              {{element[column.name]}}
+            </div>
+            <div *ngSwitchCase="filterTypes.DATE_SHORT" style="overflow: hidden; text-overflow: ellipsis;">
+              {{element[column.name] | date: 'dd/MM/yyyy'}}
+            </div>
+            <div *ngSwitchCase="filterTypes.STATUS" style="overflow: hidden; text-overflow: ellipsis;">
+              <mat-icon style="line-height: 20px; vertical-align: middle;margin-right:10px;" [ngClass]="statusColor(element[column.name])">fiber_manual_record</mat-icon>{{statusName(element[column.name])}}
+            </div>
+            <div *ngSwitchCase="filterTypes.BOOLEAN" style="overflow: hidden; text-overflow: ellipsis;">
+              <span *ngIf="element[column.name] === true">oui</span>
+              <span *ngIf="element[column.name] === false">non</span>
+              <span *ngIf="element[column.name] === undefined">-</span>
+            </div>
+            <div *ngSwitchDefault>
+
+              <a *ngIf="column.routerLink && element.unclickable !== column.name" [routerLink]="buildRouterLink(column, element)"
+                 [matTooltip]="getObjectValueFromPath(column.name, element)" matTooltipClass="max-sized-tooltip"
+                 [ngStyle]="{'max-width' : column.maxWidthPx ? column.maxWidthPx.toString() + 'px' : '200px'}" class="link-datagrid">
+                <mat-icon style="color: #BDBDBD;">chevron_right</mat-icon>
+                <span class="aligned-with-icon">{{getObjectValueFromPath(column.name, element)}}</span>
+              </a>
+              <ng-container *ngIf="column.routerLink && element.unclickable === column.name">
+                <mat-icon style="color: #BDBDBD;visibility: hidden">chevron_right</mat-icon>
+                <span class="aligned-with-icon">{{getObjectValueFromPath(column.name, element)}}</span>
+              </ng-container>
+              <ng-container *ngIf="!column.routerLink">
+                <mat-icon *ngIf="column.clickable && getObjectValueFromPath(column.name, element)"
+                          style="color: #BDBDBD;">chevron_right
+                </mat-icon>
+                <div [ngClass]="{'aligned-with-icon': column.clickable}"
+                     [ngStyle]="{'max-width' : column.maxWidthPx ? column.maxWidthPx.toString() + 'px' : '200px'}"
+                     [matTooltip]="getObjectValueFromPath(column.name, element)" matTooltipClass="max-sized-tooltip">
+                  {{getObjectValueFromPath(column.name, element)}}
+                </div>
+              </ng-container>
+<!--
+              <div *ngIf="column.clickable && element.unclickable !== column.name" [routerLink]="router(column.name, element)" matTooltip="{{element[column.name]}}" matTooltipPosition="above" matTooltipShowDelay="50" matTooltipDisabled="{{!column.buttonToolTip}}">
+                <button mat-stroked-button style="width: 95%; text-align: left; border: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><mat-icon style="margin: -2px -3px 0 -15px; color: #BDBDBD;">chevron_right</mat-icon>{{element[column.name]}}</button>
+              </div>
+              <div *ngIf="column.clickable && element.unclickable === column.name">
+                <button mat-stroked-button style="width: 95%; text-align: left; border: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" disabled><mat-icon style="margin: -2px -3px 0 -15px; color: #BDBDBD;visibility: hidden">chevron_right</mat-icon>{{element[column.name]}}</button>
+              </div>
+              <div *ngIf="!column.clickable" style="overflow: hidden; text-overflow: ellipsis;">
+                {{element[column.name]}}</div>
+-->
+            </div>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="opt_end" stickyEnd>
+      <th mat-header-cell *matHeaderCellDef style="height: 70px; padding: 0 10px; display: none;">
+      </th>
+      <td mat-cell *matCellDef="let element" style="border: none; padding: 0 10px; box-shadow: -5px 0 5px -5px #BDBDBD;">
+        <div style="display: flex;">
+          <div *ngIf="options.includes(optionTypes.START)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Démarrer" *ngIf="!element.isStarted" [disabled]="element.actionDisabled"
+                    (click)="onClick(actionTypes.START, element)">
+              <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled ? '#E2E2E3' : '#575656'}">play_circle_outline</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.OPEN_DIALOG)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Ouvrir pop-up" [disabled]="element.actionDisabled && !element.keepActiveOpenDialog"
+                    (click)="onClick(actionTypes.OPEN_DIALOG, element)">
+              <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled && !element.keepActiveOpenDialog ? '#E2E2E3' : '#575656'}">launch</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.PREVIEW)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Afficher détails" [disabled]="element.actionDisabled"
+                    (click)="sidePanelType ? toggleSidePanel(element) : onClick(actionTypes.OPEN_PREVIEW, element)">
+              <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled ? '#E2E2E3' : '#575656'}">visibility</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.DUPLICATE)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Dupliquer" [disabled]="element.actionDisabled"
+                    (click)="onClick(actionTypes.DUPLICATE, element)">
+              <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled ? '#E2E2E3' : '#575656'}">content_copy</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.EDIT)">
+            <div style="display: flex;">
+              <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Modifier" [disabled]="element.actionDisabled"
+                      (click)="onClick(actionTypes.EDIT, element)">
+                <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled ? '#E2E2E3' : '#575656'}">edit</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="options.includes(optionTypes.DELETE)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Supprimer" [disabled]="element.actionDisabled || !element.deletable"
+                    (click)="onClick(actionTypes.DELETE, element)">
+              <mat-icon class="grey" style="padding-bottom: 8px;" [ngStyle]="{'color' : element.actionDisabled || !element.deletable ? '#E2E2E3' : '#575656'}">clear</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.ACTION)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Actions" [disabled]="element.actionDisabled">
+              <mat-icon (click)="$event.stopPropagation();" [matMenuTriggerFor]="menu" style="float: right">drag_indicator</mat-icon>
+              <mat-menu class="mat-elevation-z0 mat-menu-content" #menu="matMenu">
+                <button mat-menu-item style="color: white" [routerLink]="router('default', element)">Consulter / modifier</button>
+                <button mat-menu-item style="color: grey" (click)="onClick(actionTypes.DUPLICATE, element)" [disabled]="true">Dupliquer</button>
+                <button mat-menu-item style="color: grey" (click)="onClick(actionTypes.DEACTIVATE, element)" [disabled]="true">Désactiver</button>
+                <button mat-menu-item style="color: grey" (click)="onClick(actionTypes.DELETE, element)" [disabled]="true">Supprimer</button>
+                <button mat-menu-item style="color: grey" (click)="onClick(actionTypes.ACTIVATE, element)" [disabled]="true">Activer</button>
+              </mat-menu>
+            </button>
+          </div>
+          <div *ngIf="options.includes(optionTypes.ACTION_BILL)">
+            <button mat-icon-button style="width: 35px;height: 35px;" matTooltip="Actions" [disabled]="element.actionDisabled">
+              <mat-icon (click)="$event.stopPropagation();" [matMenuTriggerFor]="menu" style="float: right">drag_indicator</mat-icon>
+              <mat-menu class="mat-elevation-z0 mat-menu-content" #menu="matMenu">
+                <button mat-menu-item style="color: white" *ngIf="element.billDetails && element.billDetails.bill && element.status === 0" (click)="onClick(actionTypes.OPEN_DIALOG, element)" [disabled]="element.actionDisabled">Modifier la facture</button>
+                <button mat-menu-item style="color: white" *ngIf="(!element.billDetails && !element.billDetails.bill) || (element.billDetails && element.billDetails.bill && element.status === 3)" [disabled]="element.actionDisabled">Aucune action disponible</button>
+                <button mat-menu-item style="color: white" *ngIf="element.billDetails && element.billDetails.bill && element.exportDate && element.status !== 3" (click)="onClick(actionTypes.CREDIT_NOTE, element)" [disabled]="element.actionDisabled">Faire un avoir</button>
+                <button mat-menu-item style="color: white" *ngIf="element.billDetails && element.billDetails.bill && element.billDetails.bill.name" (click)="onClick(actionTypes.PDF, element)" [disabled]="element.actionDisabled">PDF</button>
+              </mat-menu>
+            </button>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [hidden]="!isFiltered && (row.position > maxRows)">
+    </tr>
+  </table>
+  <mat-paginator [ngStyle]="{'display': isFiltered && dataSource.data && dataSource.data.length > 0 ? 'unset' : 'none'}" style="display: inline-block; float: right; color: #575656 !important; background-color: transparent; margin-top: -10px;" [pageSizeOptions]="[maxRows, maxRows*2, maxRows*4]" showFirstLastButtons></mat-paginator>
+  <mat-spinner *ngIf="isLoading" [diameter]="30" style="margin: 40px; display: inline-block; left: 45%"></mat-spinner>
+  <div style="margin-top: 15px; float: right; margin-bottom: 5px;" *ngIf="!isFiltered && this.dataSource.data.length > maxRows || page > 0">
+    <mat-icon *ngIf="!isFiltered" (click)="page > 0 ? setPage(page - 1) : ''" [ngStyle]="{'color' : page > 0 ? '#575656' : 'rgba(0, 0, 0, 0.26)', 'pointer-events' : page > 0 ? 'visible' : 'none'}" style="cursor: pointer; font-size: 30px; margin-right: 3px;">chevron_left</mat-icon>&nbsp;&nbsp;&nbsp;&nbsp;<mat-icon *ngIf="!isFiltered" (click)="this.dataSource.data.length > maxRows ? setPage(page + 1) : ''"  [ngStyle]="{'color' : this.dataSource.data.length > maxRows ? '#575656' : 'rgba(0, 0, 0, 0.26)', 'pointer-events' : this.dataSource.data.length > maxRows ? 'visible' : 'none'}" style="cursor: pointer; font-size: 30px; margin-right: 59px;">chevron_right</mat-icon>
+  </div>
+</div>

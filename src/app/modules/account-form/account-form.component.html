@@ -1,0 +1,186 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+<form [formGroup]="accountForm">
+  <div *ngIf="!loading">
+
+    <!-- SEARCH -->
+    <div *ngIf="!viewForm && (data.mode === mode.SEARCH || data.mode == mode.CREATE_OR_SEARCH)">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+        <mat-label>Rôle *</mat-label>
+        <mat-select [ngClass]="data.disabled || data.disabledRole ? '' : 'grey-select'" formControlName="role">
+          <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" style="margin-bottom: 15px;">
+        <mat-label>Rechercher</mat-label>
+        <input matInput [formControl]="search" [matAutocomplete]="auto" [disabled]="data.disabled">
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let account of suggestedAccount" [value]="getAccountName(account)" (click)="currentData.account = account">
+        <span class="grey" style="display: flex; width: 100%;">
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{getAccountName(account)}}</span>
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{account.category + ' - ' + account.type}}</span>
+          <span style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{getStatusName(account.state)}}</span>
+          <span style="width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{'(commercial: ' + account.commercial?.first_name + ' ' + account.commercial?.last_name?.toUpperCase() + ')'}}</span>
+        </span>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <div class="form-bottom-actions" *ngIf="!data.disabled">
+        <div class="form-bottom-actions-left grey" *ngIf="data.mode === mode.CREATE_OR_SEARCH">
+          <button mat-button style="padding-left: 10px;" [disabled]="saving" (click)="changeMode()">
+            <mat-icon>add</mat-icon><span style="padding-left: 5px;">Créer un nouveau compte</span>
+          </button>
+        </div>
+        <div class="form-bottom-actions-right grey">
+          <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+          <button mat-flat-button color="primary" [disabled]="saving || !isSelectionComplete()"
+                  (click)="save()">{{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div *ngIf="viewForm && (data.mode === mode.CREATE || data.mode === mode.CREATE_OR_SEARCH)">
+      <mat-horizontal-stepper linear #stepper [ngClass]="data.inStep ? 'stepper-hidden' : 'stepper-disabled'">
+        <mat-step label="Informations du compte">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+            <mat-label>Rôle *</mat-label>
+            <mat-select [ngClass]="data.disabledRole ? '' : 'grey-select'" formControlName="role">
+              <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="two-column-grid">
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Commercial *</mat-label>
+                <input matInput [matAutocomplete]="auto" formControlName="commercial" (input)="suggestCommercial()">
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectCommercial($event)">
+                  <mat-option class="grey" *ngFor="let commercial of commercials" [value]="commercial">
+                    {{getName(commercial)}}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Type *</mat-label>
+                <mat-select [ngClass]="!!data.forceType ? '' : 'grey-select'" formControlName="accountType" (selectionChange)="onTypeChange()">
+                  <mat-option class="grey" *ngFor="let type of typeList" [value]="type">{{type}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="accountForm.getRawValue().accountType === proType">
+                <mat-label>Siren *</mat-label>
+                <input matInput placeholder="9 caractères" formControlName="siren">
+              </mat-form-field>
+            </div>
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                <mat-label>Catégorie *</mat-label>
+                <mat-select class="grey-select" formControlName="category">
+                  <mat-option class="grey" *ngFor="let category of categoryList" [value]="category">{{category}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="accountForm.getRawValue().accountType === proType">
+                <mat-label>Nom *</mat-label>
+                <input matInput formControlName="name">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="accountForm.getRawValue().accountType === proType">
+                <mat-label>Raison sociale *</mat-label>
+                <input matInput formControlName="corporateName">
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="form-bottom-actions">
+            <div class="form-bottom-actions-left grey" *ngIf="data.mode === mode.CREATE_OR_SEARCH">
+              <button mat-button style="padding-left: 10px;" [disabled]="saving" (click)="changeMode()">
+                <mat-icon>search</mat-icon><span style="padding-left: 5px;">Rechercher un compte existant</span>
+              </button>
+            </div>
+            <div class="form-bottom-actions-right grey">
+              <button mat-button [disabled]="saving" (click)="cancel()" style="margin-right: 7px;">Annuler</button>
+              <button mat-flat-button color="primary" [disabled]="saving || !(this.accountForm.dirty && this.accountForm.valid)" matStepperNext>
+                <mat-spinner *ngIf="searchLoading" [diameter]="30" style="position: absolute; bottom: 2.5px; left: 25px;"></mat-spinner>Suivant
+              </button>
+            </div>
+          </div>
+        </mat-step>
+        <mat-step label="Informations du contact principal">
+          <app-contact-form [data]="{mode: 'create', inStep: data.inStep}"
+                            (cancelAction)="back();" (contactSaved)="save($event)"></app-contact-form>
+        </mat-step>
+      </mat-horizontal-stepper>
+    </div>
+
+    <!-- EDIT -->
+    <div *ngIf="data.mode === mode.EDIT">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+        <mat-label>Rôle *</mat-label>
+        <mat-select [ngClass]="data.disabled || data.disabledRole ? '' : 'grey-select'" [(ngModel)]="currentData.role" [disabled]="data.disabled || data.disabledRole">
+          <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div class="two-column-grid">
+        <div class="column">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Commercial *</mat-label>
+            <input matInput [matAutocomplete]="auto" formControlName="commercial" (input)="suggestCommercial()">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectCommercial($event)">
+              <mat-option class="grey" *ngFor="let commercial of commercials" [value]="commercial">
+                {{getName(commercial)}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Catégorie *</mat-label>
+            <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" formControlName="category">
+              <mat-option class="grey" *ngFor="let category of categoryList" [value]="category">{{category}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="column">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Importance</mat-label>
+            <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" formControlName="importance">
+              <mat-option [value]="null"></mat-option>
+              <mat-option class="grey" *ngFor="let level of importanceLevels" [value]="level">{{level}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Groupes</mat-label>
+            <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" multiple formControlName="groups">
+              <mat-option [value]="null"></mat-option>
+              <mat-option class="grey" *ngFor="let group of allGroups" [value]="group.uuid">{{group.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <mat-expansion-panel style="margin: 10px 5px; border-radius: 5px;" *ngIf="data.showEntity && currentData.account.entity"
+                           [(expanded)]="editEntity" (opened)="editEntity = true" (closed)="editEntity = false">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <div class="grey" style="display: flex; width: 100%;">
+              <mat-icon style="margin-right: 5px">account_balance</mat-icon><span style="margin-top: 3px;">{{currentData.account.entity.name}}&nbsp;:</span><span style="color: #8d9093; margin: auto;">{{(currentData.account.entity.domain ? currentData.account.entity.domain : '') + (currentData.account.entity.domain && currentData.account.entity.type ? ' - ' : '') + (currentData.account.entity.type ? currentData.account.entity.type : '')}}</span><span style="visibility: hidden;">{{currentData.account.entity.name}}&nbsp;:</span>
+            </div>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div style="margin: 15px;" *ngIf="editEntity">
+          <app-entity-form [data]="{disabled: data.disabled, defaultData: currentData.account.entity}"
+                           (cancelAction)="cancel()" (entitySaved)="updateEntity($event)"></app-entity-form>
+        </div>
+      </mat-expansion-panel>
+      <div class="form-bottom-actions" *ngIf="!editEntity && !data.disabled">
+        <div class="form-bottom-actions-left grey">
+          <button mat-flat-button class="red-delete-button" *ngIf="data.deletable" [disabled]="saving"
+                  (click)="delete(currentData)">Supprimer</button>
+          <button mat-button style="visibility: hidden; margin-left: 7px;" disabled>Annuler</button> <!-- blank -->
+        </div>
+        <button mat-flat-button class="grey" style="margin: auto;" *ngIf="data.accessDetail" [disabled]="saving"
+                (click)="redirect.emit()" [routerLink]="['/comptes', currentData.account.uuid]">
+          <mat-icon style="font-size: 20px;">exit_to_app</mat-icon>Voir détails
+        </button>
+        <div class="form-bottom-actions-right grey">
+          <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+          <button mat-flat-button color="primary" [disabled]="saving || !(this.accountForm.dirty && this.accountForm.valid)"
+                  (click)="save()">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

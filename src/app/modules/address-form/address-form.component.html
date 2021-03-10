@@ -1,0 +1,57 @@
+<form [formGroup]="addressForm">
+  <div>
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" style="margin-bottom: 10px" *ngIf="data.roles">
+      <mat-label>Rôle *</mat-label>
+      <mat-select [ngClass]="data.disabled || data.disabledRole ? '' : 'grey-select'" formControlName="role">
+        <mat-option class="grey" *ngFor="let category of data.roles" [value]="category">{{category}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div class="two-column-grid">
+      <div class="column">
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Adresse *</mat-label>
+          <input matInput [matAutocomplete]="auto" formControlName="address1" (focusin)="searchLocation(addressForm.getRawValue().address1)" (input)="suggestAddress()">
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option class="grey" *ngFor="let location of suggestedLocation" [value]="getAddress(location.streetNumber, location.street)"
+                        (click)="setAddress(location)" (keyup)="setAddress(location)">{{location.fulltext}}</mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Code postal *</mat-label>
+          <input matInput formControlName="postCode">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Cage d'escalier</mat-label>
+          <input matInput formControlName="staircase">
+        </mat-form-field>
+      </div>
+      <div class="column">
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Complément d'adresse</mat-label>
+          <input matInput formControlName="address2">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Ville *</mat-label>
+          <input matInput formControlName="city">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="bigger-form-field grey" appearance="outline">
+          <mat-label>Coordonnées INSEE</mat-label>
+          <input matInput formControlName="inseeCoordinates">
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+  <div class="form-bottom-actions" *ngIf="!data.disabled">
+    <div class="form-bottom-actions-left grey">
+      <button mat-flat-button class="red-delete-button" *ngIf="data.mode === mode.EDIT && data.deletable" [disabled]="saving"
+              (click)="delete(currentData)">Supprimer
+      </button>
+    </div>
+    <div class="form-bottom-actions-right grey">
+      <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button mat-flat-button color="primary" [disabled]="saving|| !(this.addressForm.dirty && this.addressForm.valid)"
+              (click)="save();">{{data.inStep ? 'Suivant' : 'Enregistrer'}}
+      </button>
+    </div>
+  </div>
+</form>

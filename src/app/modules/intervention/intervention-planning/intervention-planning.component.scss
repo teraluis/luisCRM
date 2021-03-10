@@ -1,0 +1,39 @@
+.form-element {
+  width: 100%;
+}
+
+.middle-element {
+  margin-top: 10px;
+}
+
+mat-label {
+  font-size: 0.9rem !important;
+  font-weight: normal !important;
+  height: 19px !important;
+  line-height: 1.19 !important;
+}
+
+.info-form-middle {
+  margin-top: 50px;
+}
+
+.info-form-title {
+  font-weight: 300;
+}
+
+.info-form-value {
+  font-size: 1.2rem;
+  line-height: 1rem;
+}
+
+.right-info-form-column, .left-info-form-column {
+  display: inline-block;
+}
+
+.right-info-form-column {
+  vertical-align: super;
+}
+
+.left-info-form-column {
+  width: 40px;
+}

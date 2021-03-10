@@ -1,0 +1,28 @@
+<div class="loginPic">
+
+<mat-progress-bar *ngIf="loading" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<mat-card class="example-card">
+  <mat-card-header style="margin-left: -5%;">
+    <div class="loginTitle">
+      <div class="calypsoLogo"></div>
+      <div class="calypsoTitle" style="padding-top: 5vh;">BIENVENUE SUR</div>
+      <div class="calypsoTitle">VOTRE ESPACE CALYPSO</div>
+    </div>
+  </mat-card-header>
+  <mat-card-content style="margin-bottom: 6px; margin-top: 30vh;">
+    <form class="example-form">
+      <mat-form-field style="width: 80%;margin-left: 10%;">
+        <input matInput placeholder="Identifiant" [(ngModel)]="username" [ngModelOptions]="{standalone: true}" (keydown.enter)="login()">
+      </mat-form-field>
+      <mat-form-field style="width: 80%;margin-left: 10%;">
+        <input matInput placeholder="Mot de passe" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" type="password" (keydown.enter)="login()">
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+  <mat-card-actions style="margin-left: 0">
+    <button mat-raised-button (click)="login()" color="primary" style="width: 80%;height: 45px;margin-left: 10%; border-radius: 2px;">CONNEXION</button>
+  </mat-card-actions>
+</mat-card>
+
+</div>

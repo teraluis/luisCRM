@@ -1,0 +1,36 @@
+<h1 class="dialog-title" mat-dialog-title>
+  <mat-icon style="float: left; cursor: pointer;font-size: 30px;" (click)="defaultSettings()" matTooltip="Restaurer">settings_backup_restore</mat-icon>
+  <mat-icon style="float: left; cursor: pointer;font-size: 30px;margin-left: 2%" (click)="saveSettings()" matTooltip="Sauvegarder"
+            [ngStyle]="{'pointer-events' : 'none', 'color' : 'grey'}">save</mat-icon> <!-- TODO: remove ngStyle when user preferences ready -->
+  <button style="float: right; cursor: pointer; background-color: transparent; border: none; outline: none" mat-dialog-close>
+    <mat-icon style="font-size: 30px;">close</mat-icon></button>
+</h1>
+
+<div class="text" style="text-align: center; color: #575656; display: inline-flex" mat-dialog-content>
+  <div class="example-container">
+    <h2>Affiché</h2>
+    <div
+      cdkDropList
+      #displayedList="cdkDropList"
+      [cdkDropListData]="data.display"
+      [cdkDropListConnectedTo]="[hiddenList]"
+      class="example-list"
+      (cdkDropListDropped)="drop($event)">
+        <div class="example-box" *ngFor="let column of data.display" cdkDrag>{{getName(column)}}</div>
+    </div>
+  </div>
+
+  <div class="example-container">
+    <h2>Masqué</h2>
+    <div
+      cdkDropList
+      #hiddenList="cdkDropList"
+      [cdkDropListData]="data.hide"
+      [cdkDropListConnectedTo]="[displayedList]"
+      class="example-list"
+      (cdkDropListDropped)="drop($event)">
+      <div class="example-box" *ngFor="let column of data.hide" cdkDrag>{{getName(column)}}</div>
+    </div>
+  </div>
+</div>
+

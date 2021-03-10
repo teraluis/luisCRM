@@ -1,0 +1,51 @@
+<mat-sidenav-container autosize [hasBackdrop]="true" (backdropClick)="sidePanel.close()">
+  <mat-sidenav #sidePanel id="sidePanel" class="side-panel" [autoFocus]="true" [fixedInViewport]="true"
+               [fixedTopGap]="64" [fixedBottomGap]="0"
+               position="end" mode="over" (focusout)="sidePanel.close()">
+    <mat-toolbar class="toggleBar">
+      <span class="info-title">{{content.title}}</span>
+      <span *ngIf="canNavigate" class="action">
+        <mat-icon (click)="previous()" [ngClass]="{'navigation-disabled': !hasPrevious()}">
+          navigate_before
+        </mat-icon>
+        <span id="pagination">{{getPagination()}}</span>
+        <mat-icon (click)="next()" [ngClass]="{'navigation-disabled': !hasNext()}">
+          navigate_next
+        </mat-icon>
+      </span>
+      <mat-icon (click)="sidePanel.close()">close</mat-icon>
+    </mat-toolbar>
+    <div class="grid-content">
+      <ng-template [ngIf]="isLoading" [ngIfElse]="showContent">
+        <mat-spinner [diameter]="60" style="margin: auto"></mat-spinner>
+      </ng-template>
+      <ng-template #showContent>
+        <ng-template ngFor let-element [ngForOf]="content.element">
+          <div style="width: 100%" *ngIf="element.title">
+            <div class="info-content" style="text-align: center; color: #575656">{{element.title}}</div>
+            <mat-divider style="width: 80%; margin-left: 10%;"></mat-divider>
+            <div style="height: 30px"></div>
+          </div>
+          <ng-template [ngIf]="element.isLoading" [ngIfElse]="loaded">
+            <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+          </ng-template>
+          <ng-template #loaded>
+            <ng-template [ngIf]="element.content && element.content.length" [ngIfElse]="noContent">
+              <ng-template ngFor let-info [ngForOf]="element.content">
+                <div class="info-content" style="color: #22a8c2;">{{info.label}}&nbsp;:</div>
+                <div *ngIf="!info.clickable && !info.routerLink" class="info-content" style="color: #575656;">{{info.value}}</div>
+                <a *ngIf="info.clickable" (click)="info.clickable()" class="info-content">{{info.value}}</a>
+                <a *ngIf="info.routerLink" [routerLink]="['/' + info.routerLink]" class="info-content">{{info.value}}</a>
+                <div style="height: 20px"></div>
+              </ng-template>
+            </ng-template>
+            <ng-template #noContent>
+              <div class="info-content" style="color: #575656; font-style: italic;">Non renseigné</div>
+              <div style="height: 20px"></div>
+            </ng-template>
+          </ng-template>
+        </ng-template>
+      </ng-template>
+    </div>
+  </mat-sidenav>
+</mat-sidenav-container>

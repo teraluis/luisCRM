@@ -1,0 +1,26 @@
+<app-topbar-component></app-topbar-component>
+<mat-sidenav-container class="sidenav-container" autosize>
+  <mat-sidenav class="sidenav" #sidenav fixedInViewport="true" mode="side" [opened]="true">
+    <mat-nav-list style="overflow: hidden;padding-top: 0 !important">
+      <app-menu-component *ngFor="let child of menuItems" [menuItem]="child"
+                          [privileges]="privileges" [isExpanded]="isExpanded"></app-menu-component>
+    </mat-nav-list>
+
+    <mat-toolbar class="toggleBar">
+      <button mat-icon-button (click)="isExpanded = !isExpanded">
+        <mat-icon *ngIf="!isExpanded">chevron_right</mat-icon>
+        <mat-icon *ngIf="isExpanded">chevron_left</mat-icon>
+      </button>
+    </mat-toolbar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div class="sidenav-content-container">
+      <router-outlet></router-outlet>
+      <app-side-panel></app-side-panel>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+
+

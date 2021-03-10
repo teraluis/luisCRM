@@ -1,0 +1,278 @@
+<mat-progress-bar *ngIf="saving" class="sticky-progress-bar" mode="determinate" [value]="progressValue"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="breadcrumb" *ngIf="isLoading">Chargement...</div>
+  <div class="breadcrumb" *ngIf="!isLoading">
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/orders']">Liste des commandes</a></span>/
+    <span *ngIf="order.account && order.account.entity" style="margin: auto 10px;"><span style="margin-right: 10px"><a class="link" [routerLink]="['/comptes', order.account.uuid]">Client {{order.account.entity.name}}</a></span>/</span>
+    <span *ngIf="order.market" style="margin: auto 10px;"><span style="margin-right: 10px"><a class="link" [routerLink]="['/market', order.market.uuid]">Marché {{order.market.name}}</a></span>/</span>
+    <span style="font-weight: bold;margin-right: 5px">Commande {{order.name}}</span><button style="border-style: none;cursor: pointer" class="copyButton" (click)="copyMessage(order.name)"></button>
+  </div>
+</div>
+
+<div class="grid-container background" id="window">
+  <div class="main-content">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" [(selectedIndex)]="index" (selectedTabChange)="tabChange()">
+      <mat-tab label="Compte">
+        <ng-template matTabContent>
+          <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px; margin-bottom: 15px;">
+            <mat-card-content style="padding: 40px">
+              <div *ngIf="isLoading"><mat-spinner [diameter]="30" style="margin: auto"></mat-spinner></div>
+              <div *ngIf="!isLoading">
+                <div class="two-column-grid">
+                  <div class="column">
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                      <mat-label>Établissement</mat-label>
+                      <input matInput [(ngModel)]="accountEstablishment" disabled>
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngIf="accountBillingAddress">
+                      <mat-label>Adresse de facturation</mat-label>
+                      <input matInput [(ngModel)]="accountBillingAddress.address1" disabled>
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngIf="accountBillingAddress">
+                      <mat-label>Code postal</mat-label>
+                      <input matInput [(ngModel)]="accountBillingAddress.postCode" disabled>
+                    </mat-form-field>
+                    <div [ngSwitch]="disabled">
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngSwitchCase="false">
+                        <mat-label>Commercial</mat-label>
+                        <input matInput [formControl]="search" [matAutocomplete]="auto" (ngModelChange)="selectCommercial($event)" required>
+                        <mat-autocomplete #auto="matAutocomplete">
+                          <mat-option class="grey" *ngFor="let commercial of commercials" [value]="commercial">
+                            {{getUserName(commercial)}}
+                          </mat-option>
+                        </mat-autocomplete>
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngSwitchDefault>
+                        <mat-label>Commercial</mat-label>
+                        <input matInput [value]="searchField" disabled>
+                      </mat-form-field>
+                      <div [ngSwitch]="disabled || !modification">
+                        <mat-form-field appearance="outline" class="bigger-form-field" *ngSwitchCase="false">
+                          <mat-label>Agence de production *</mat-label>
+                          <input type="text"
+                                 matInput
+                                 [formControl]="agencyControl"
+                                 [matAutocomplete]="autoAgency"
+                                  #agency>
+                          <mat-autocomplete #autoAgency="matAutocomplete" [displayWith]="displayAgency" (optionSelected)="agencyChange($event)">
+                            <mat-option *ngFor="let agency of filteredOptions | async" [value]="agency">
+                              {{agency.name}}
+                            </mat-option>
+                          </mat-autocomplete>
+                        </mat-form-field>
+                        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngSwitchDefault>
+                          <mat-label>Agence de production</mat-label>
+                          <input matInput [value]="order.agency.name" disabled>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                      <mat-label>Marché</mat-label>
+                      <input matInput *ngIf="order.market" value="{{order.market.name + ' - ' + order.market.marketNumber}}" disabled>
+                      <input matInput *ngIf="!order.market" disabled value="Aucun">
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngIf="accountBillingAddress">
+                      <mat-label>Complément adresse</mat-label>
+                      <input matInput [(ngModel)]="accountBillingAddress.address2" disabled>
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngIf="accountBillingAddress">
+                      <mat-label>Ville</mat-label>
+                      <input matInput [(ngModel)]="accountBillingAddress.city" disabled>
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                      <mat-label>Donneur d'ordre - Contact</mat-label>
+                      <mat-select [ngClass]="disabled ? '' : 'grey-select'" [(ngModel)]="purchaserContactName" [disabled]="disabled">
+                        <mat-option class="grey" *ngFor="let c of purchaserContacts" [value]="getContactName(c)"
+                                    (click)="selectPurchaserContact(c)">{{getContactName(c)}}<span *ngIf="c.origin"> - {{c.origin}}</span></mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <div *ngIf="!isLoading">
+            <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" #matBillExpansionPanel>
+              <mat-expansion-panel-header>
+                <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                  <div *ngIf="order.billedEstablishment || (!order.billedContact && !order.billedEstablishment && order.establishment)" style="margin: auto 0; display: flex;"><mat-icon style="margin: auto 5px auto 0;">business</mat-icon><span style="margin: auto 0;" *ngIf="order.billedEstablishment">{{order.billedEstablishment.name}}</span><span style="align-items: center" *ngIf="!order.billedEstablishment">{{order.establishment.establishment.name}}</span></div>
+                  <div *ngIf="order.billedContact" style="margin: auto 0; display: flex;"><mat-icon style="margin: auto 5px auto 0;">person</mat-icon><span style="margin: auto 0;">{{getPeopleName(order.billedContact) + '  -  ' + order.billedContact.mobilePhone}}</span></div>
+                  <span style="color: #8d9093; margin: auto;">Facturé</span>
+                  <!--blank--><div *ngIf="order.billedEstablishment || (!order.billedContact && !order.billedEstablishment && order.establishment)" style="visibility: hidden;"><mat-icon style="margin: auto 5px auto 0;">business</mat-icon><span *ngIf="order.billedEstablishment">{{order.billedEstablishment.name}}</span><span *ngIf="!order.billedEstablishment">{{order.establishment.establishment.name}}</span></div>
+                  <!--blank--><div *ngIf="order.billedContact" style="visibility: hidden;"><mat-icon style="margin: auto 5px auto 0;">person</mat-icon><span>{{getPeopleName(order.billedContact) + '  -  ' + order.billedContact.mobilePhone}}</span></div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div style="margin: 15px 45px;">
+                <mat-button-toggle-group [(ngModel)]="billedToggle" style="margin: 0 0 20px 5px; width: 99%;" class="grey-checked-option" [disabled]="disabled">
+                  <mat-button-toggle class="grey" style="width: 50%;" value="establishment">Établissement</mat-button-toggle>
+                  <mat-button-toggle class="grey" style="width: 50%;" value="individual">Particulier</mat-button-toggle>
+                </mat-button-toggle-group>
+                <div *ngIf="billedToggle === 'establishment'">
+                  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" style="margin-bottom: 15px;">
+                    <mat-label>Établissement</mat-label>
+                    <mat-select class="grey-select" [(ngModel)]="selectedBilledEstablishment" [disabled]="disabled">
+                      <mat-option class="grey" *ngFor="let establishment of possibleBilledEstablishmentIds" [value]="establishment">
+                        {{getBillEstablishmentName(establishment)}}</mat-option>
+                      <mat-option style="color: #BDBDBD; font-style: italic;" *ngIf="possibleBilledEstablishments.length === 0" disabled>Aucun établissement facturé</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="form-bottom-actions">
+                    <div class="form-bottom-actions-right grey">
+                      <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="matBillExpansionPanel.close()">Annuler</button>
+                      <button mat-flat-button color="primary" [disabled]="saving || !isBilledEstablishmentComplete()"
+                              (click)="changeBilledEstablishment()">Enregistrer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="billedToggle === 'individual'">
+                  <app-contact-form [data]="{mode: 'search', defaultData: {people: order.billedContact}, disabled: disabled}"
+                                    (contactSaved)="selectBilledContact($event)" (cancelAction)="matBillExpansionPanel.close()"></app-contact-form>
+                </div>
+              </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" #matPayerExpansionPanel>
+              <mat-expansion-panel-header>
+                <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                  <div *ngIf="order.payerEstablishment || (!order.payerContact && !order.payerEstablishment && order.establishment)" style="margin: auto 0; display: flex;"><mat-icon style="margin: auto 5px auto 0;">business</mat-icon><span style="margin: auto 0;" *ngIf="order.payerEstablishment">{{order.payerEstablishment.name}}</span><span style="align-items: center" *ngIf="!order.payerEstablishment">{{order.establishment.establishment.name}}</span></div>
+                  <div *ngIf="order.payerContact" style="margin: auto 0; display: flex;"><mat-icon style="margin: auto 5px auto 0;">person</mat-icon><span style="margin: auto 0;">{{getPeopleName(order.payerContact) + '  -  ' + order.payerContact.mobilePhone}}</span></div>
+                  <span style="color: #8d9093; margin: auto;">Payeur</span>
+                  <!--blank--><div *ngIf="order.payerEstablishment|| (!order.payerContact && !order.payerEstablishment && order.establishment)" style="visibility: hidden;"><mat-icon style="margin: auto 5px auto 0;">business</mat-icon><span *ngIf="order.payerEstablishment">{{order.payerEstablishment.name}}</span><span *ngIf="!order.payerEstablishment">{{order.establishment.establishment.name}}</span></div>
+                  <!--blank--><div *ngIf="order.payerContact" style="visibility: hidden;"><mat-icon style="margin: auto 5px auto 0;">person</mat-icon><span>{{getPeopleName(order.payerContact) + '  -  ' + order.payerContact.mobilePhone}}</span></div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div style="margin: 15px 45px;">
+                <mat-button-toggle-group [(ngModel)]="payerToggle" style="margin: 0 0 20px 5px; width: 99%;" class="grey-checked-option" [disabled]="disabled">
+                  <mat-button-toggle class="grey" style="width: 50%;" value="establishment">Établissement</mat-button-toggle>
+                  <mat-button-toggle class="grey" style="width: 50%;" value="individual">Particulier</mat-button-toggle>
+                </mat-button-toggle-group>
+                <div *ngIf="payerToggle === 'establishment'">
+                  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" style="margin-bottom: 15px;">
+                    <mat-label>Établissement</mat-label>
+                    <mat-select class="grey-select" [(ngModel)]="selectedPayerEstablishment" [disabled]="disabled">
+                      <mat-option class="grey" *ngFor="let establishment of possiblePayerEstablishmentIds" [value]="establishment">
+                        {{getPayerEstablishmentName(establishment)}}</mat-option>
+                      <mat-option style="color: #BDBDBD; font-style: italic;" *ngIf="possiblePayerEstablishments.length === 0" disabled>Aucun établissement facturé</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="form-bottom-actions">
+                    <div class="form-bottom-actions-right grey">
+                      <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="matPayerExpansionPanel.close()">Annuler</button>
+                      <button mat-flat-button color="primary" [disabled]="saving || !isPayerEstablishmentComplete()"
+                              (click)="changePayerEstablishment()">Enregistrer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="payerToggle === 'individual'">
+                  <app-contact-form [data]="{mode: 'search', defaultData: {people: order.payerContact}, disabled: disabled}"
+                                    (contactSaved)="selectPayerContact($event)" (cancelAction)="matPayerExpansionPanel.close()"></app-contact-form>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </div>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Descriptif" [disabled]="isLoading">
+        <ng-template matTabContent>
+        <app-order-description [order]="order" [status]="orderStatus" [modification]="modification" [update]="updateDescription" [disabled]="disabled" *ngIf="!isLoading"
+                               (updateOrder)="updateRecap($event); getAllComments()" (emitChanged)="unsavedChanged = $event"></app-order-description>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Biens" [disabled]="isLoading">
+        <ng-template matTabContent>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-order-estate [status]="orderStatus" [order]="order" [update]="updateEstate" [modification]="modification" [modificationEvent]="modificationEvent" [disabled]="disabled" *ngIf="!isLoading"
+                              (updateOrder)="updateEstateTrigger()" (getActionButton)="addAction($event)"></app-order-estate>
+          </mat-card-content>
+        </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Interventions" [disabled]="isLoading || orderStatus < status.FILLED || orderStatus === status.CANCELED">
+        <ng-template matTabContent>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-order-intervention [orderId]="uuid" [disabled]="disabled" [update]="updateIntervention" [modificationEvent]="modificationEvent" *ngIf="!isLoading"></app-order-intervention>
+          </mat-card-content>
+        </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Facturation" [disabled]="isLoading || !orderRecap.billsCreated">
+        <ng-template matTabContent>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-order-bill [order]="order" [disabled]="disabled" (update)="getRecap()" *ngIf="!isLoading"></app-order-bill>
+          </mat-card-content>
+        </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Documents">
+        <ng-template matTabContent>
+          <app-file-upload [fileTypes]="attachmentTypes" [attachments]="attachments" [disabled]="(orderStatus > status.RECEIVED && !modification) || disabled" [updateList]="updateAttachmentList"
+                           (upload)="uploadAttachment($event)" (download)="downloadAttachment($event)" (remove)="removeAttachment($event)"></app-file-upload>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="right-column">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" *ngIf="!isLoading" [(selectedIndex)]="index2">
+      <mat-tab label="Récapitulatif">
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; box-shadow: none; border-radius: 0 0 5px 5px;">
+            <div *ngIf="recapLoading" style="width: fit-content;margin: 25px auto"><mat-spinner [diameter]="30"></mat-spinner></div>
+            <div *ngIf="!recapLoading">
+            <mat-list>
+              <mat-list-item>
+                <span><mat-icon style="vertical-align: middle;" [ngClass]="getStatusColor(orderStatus)">fiber_manual_record</mat-icon>&nbsp;<span class="grey right-column-text" style="font-weight: bold">{{getStatusName(orderStatus)}}</span></span>
+              </mat-list-item>
+              <mat-divider></mat-divider>
+              <mat-list-item>
+                <mat-icon class="grey">people</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{orderRecap.clientName}}</span>
+              </mat-list-item>
+              <mat-list-item *ngIf="orderRecap.marketName">
+                <mat-icon class="grey">pie_chart</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{orderRecap.marketName}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey">assignment_turn_in</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text" *ngIf="orderRecap.referenceFile && order.referenceFile">Bon de commande&nbsp;{{order.referenceNumber}}</span>
+                <span class="warn right-column-text" *ngIf="!orderRecap.referenceNumber || !orderRecap.referenceFile">Informations manquantes</span>
+              </mat-list-item>
+                <div style="text-align: center">
+                </div>
+                <mat-list-item>
+                  <mat-icon class="grey">house</mat-icon>&nbsp;&nbsp;
+                  <span *ngIf="orderRecap.targets.length === 0" class="warn right-column-text">Aucun bien renseigné</span>
+                  <span *ngIf="orderRecap.targets.length === 1" class="grey right-column-text">1 bien renseigné</span>
+                  <span *ngIf="orderRecap.targets.length > 1" class="grey right-column-text">{{orderRecap.targets.length}} biens renseignés</span>
+                </mat-list-item>
+                <mat-list-item *ngIf="orderStatus === status.RECEIVED">
+                  <mat-icon class="grey">list_alt</mat-icon>&nbsp;&nbsp;
+                  <span class="warn right-column-text" *ngIf="orderRecap.targets.length === 0">Aucune prestation définie</span>
+                  <span class="warn right-column-text" *ngIf="orderRecap.targets.length > 0 && orderRecap.estateWithoutPrestations > 0">{{orderRecap.estateWithoutPrestations + (orderRecap.estateWithoutPrestations === 1 ? ' bien' : ' biens')}} sans prestation</span>
+                  <span class="grey right-column-text" *ngIf="orderRecap.targets.length > 0 && orderRecap.estateWithoutPrestations === 0">Prestations définies</span>
+                </mat-list-item>
+                <mat-list-item *ngIf="orderStatus === status.FILLED">
+                  <mat-icon class="grey">event</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{orderRecap.interventionCreated + (orderRecap.interventionCreated > 1 ? ' interventions créées' : ' intervention créée')}} </span>
+                </mat-list-item>
+                <mat-list-item *ngIf="orderStatus >= status.HONORED">
+                  <mat-icon class="grey">euro_symbol</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">Montant total TTC facturé&nbsp;: {{orderRecap.billedTotal | number: '1.2-2'}}&nbsp;€</span>
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Evénements">
+        <ng-template matTabContent>
+          <app-events [headIcon]="'assignment_turn_in_outline'" [ascending]="ascending" [dataComment]="dataComment" [disabled]="disabled" (orderChanged)="orderChanged()" (sendComment)="saveComment($event)"></app-events>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<app-plus-button *ngIf="actionData.length" [data]="actionData"></app-plus-button>

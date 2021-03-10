@@ -1,0 +1,4 @@
+<app-table-search-list [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                       [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading" (clickEvent)="clickEvent($event)"
+                       (pageData)="setPageData($event)" (filterData)="setFilterData($event)" [router]="getRouterLink"
+                       [statusList]="getStatusList" [statusName]="getStatusName" [statusColor]="getStatusColor" [comboList]="getComboList"></app-table-search-list>

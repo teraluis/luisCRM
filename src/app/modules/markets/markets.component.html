@@ -1,0 +1,28 @@
+<div class="page-title content-margin">
+  <div class="name">Marchés</div>
+</div>
+
+<div style="margin:20px 40px">
+  <mat-card style="display: inline-block; margin-right: 40px; width: calc(100% - 32px);">
+    <app-table-search-list [dataSourceChange]="dataSourceChange"
+                           [displayedColumns]="displayedColumns"
+                           [hiddenColumns]="hiddenColumns"
+                           [columnsInfos]="columnsInfos"
+                           [maxRows]="maxRows"
+                           [options]="options"
+                           [loadEmitter]="isLoading"
+                           (pageData)="setPageData($event)"
+                           (filterData)="setFilterData($event)"
+                           [router]="getRouterLink"
+                           [sidePanelType]="sidePanelType">
+    </app-table-search-list>
+  </mat-card>
+</div>
+
+<div class="fixed-div" *ngIf="action === false">
+  <button mat-fab color="primary" class="big-fixed-button" (click)="action = true">
+    <mat-icon inline=true style="font-size: 40px">add</mat-icon>
+  </button>
+</div>
+
+<app-plus-button *ngIf="userRights.accountManagement" [data]="actionData"></app-plus-button>

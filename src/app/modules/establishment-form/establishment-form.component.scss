@@ -1,0 +1,23 @@
+.stepper-disabled {
+  ::ng-deep .mat-horizontal-stepper-header {
+    pointer-events: none;
+  }
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 0 24px;
+  }
+}
+
+.stepper-hidden {
+  ::ng-deep .mat-horizontal-stepper-header-container {
+    display: none;
+  }
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 0;
+  }
+}
+
+.grey-select {
+  ::ng-deep .mat-select-value-text {
+    color: #575656;
+  }
+}

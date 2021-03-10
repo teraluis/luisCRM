@@ -1,0 +1,116 @@
+<table class="no-material">
+  <tr>
+    <th>PACK</th>
+    <th>REF. ADX</th>
+    <th>REF. BPU</th>
+    <th>DÉSIGNATION</th>
+    <th>PRIX UNITAIRE HT</th>
+    <th>QUANTITÉ</th>
+    <th>REMISE</th>
+    <th>MONTANT HT</th>
+    <th>TAUX TVA</th>
+    <th>TOTAL TTC</th>
+    <th class="empty-cell-left"></th>
+  </tr>
+  <tr *ngFor="let l of lineDrafts">
+
+<!--    Colonne PACK -->
+    <th><mat-checkbox color="accent" [(ngModel)]="l.selected" *ngIf="!lock && !l.hasAnalyse" (change)="checkHasAction()"></mat-checkbox></th>
+
+<!--    Colonne REF. ADX -->
+    <th *ngIf="!l.hasAnalyse">{{l.refadx}}</th>
+    <th *ngIf="l.hasAnalyse">
+      <mat-form-field style="width: 140px !important">
+        <mat-select [disabled]="lock" [value]="getAnalyseTypeId(l)" (valueChange)="updateAnalyseType(l, $event)" style="text-align: center">
+          <mat-option *ngFor="let at of analyseTypeList"
+                      [value]="at.uuid"
+                      [matTooltip]="at.description"
+                      [matTooltipDisabled]="!at.description"
+                      matTooltipPosition="right" style="text-align: center">
+            {{at.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </th>
+
+<!--    Colonne REF. BPU -->
+    <th>
+      <mat-form-field style="width: 80px !important">
+        <input matInput [(ngModel)]="l.refBpu" [disabled]="lock" [matAutocomplete]="auto" (input)="suggestRef(l)" (change)="emitChange()">
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let r of l.designation ? [] : references" class="form-option" [value]="r.reference" (onSelectionChange)="selectReference($event, l, r)">
+            <span>{{r.reference}}</span><span *ngIf="r.designation"> ({{r.designation}}, {{r.price}}€)</span><span *ngIf="!r.designation"> ({{r.price}}€)</span>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </th>
+
+<!--    Colonne DÉSIGNATION -->
+    <th>
+      <div>
+        <mat-form-field style="width: 100% !important">
+          <input matInput [(ngModel)]="l.designation" [disabled]="lock" [matAutocomplete]="auto2" (input)="suggestDesignation(l)" (change)="emitChange()">
+          <mat-autocomplete #auto2="matAutocomplete">
+            <mat-option *ngFor="let r of l.refBpu ? [] : designations" class="form-option" [value]="r.designation" (onSelectionChange)="selectReference($event, l, r)">
+              <span>{{r.designation}}</span><span *ngIf="r.reference"> ({{r.reference}}, {{r.price}}€)</span><span *ngIf="!r.reference"> ({{r.price}}€)</span>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+    </th>
+
+<!--    Colonne PRIX UNITAIRE HT -->
+    <th>
+      <mat-form-field style="width: 60px !important">
+        <input matInput type="number" [(ngModel)]="l.unitPrice" (keyup)="changeValue(l)" [disabled]="lock">
+        <mat-icon matSuffix style="opacity: 50%;font-size: 18px">euro</mat-icon>
+      </mat-form-field>
+    </th>
+
+<!--    Colonne QUANTITÉ -->
+    <th>
+      <mat-form-field style="width: 30px !important" *ngIf="l.hasAnalyse">
+        <input matInput type="number" [(ngModel)]="l.quantity" (keyup)="changeValue(l)" [disabled]="lock">
+      </mat-form-field>
+      <span *ngIf="!l.hasAnalyse">{{l.quantity}}</span>
+    </th>
+
+<!--    Colonne REMISE -->
+    <th>
+      <mat-form-field style="width: 50px !important">
+        <input matInput type="number" min="0" max="100" [(ngModel)]="l.discount" (keyup)="changeValue(l)"
+               (change)="checkValue(l)" [disabled]="lock">
+        <mat-icon matSuffix style="font-size: 18px">%</mat-icon>
+      </mat-form-field>
+    </th>
+
+<!--    Colonne MONTANT HT -->
+    <th><span *ngIf="l.priceWithoutTaxes !== null">{{l.priceWithoutTaxes | number: '1.2-2'}}&nbsp;€</span></th>
+
+<!--    Colonne TAUX TVA -->
+    <th>{{l.tvacode}}</th>
+
+<!--    Colonne TOTAL TTC -->
+    <th><span *ngIf="l.total !== null">{{l.total | number: '1.2-2'}}&nbsp;€</span></th>
+
+<!--    Colonne [pack buttons] -->
+    <th><button mat-icon-button [disabled]="lock || !l.selected || !hasAction" [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button></th>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngIf="canMakePack()" (click)="makePack()">Faire un pack</button>
+      <button mat-menu-item *ngIf="l.prestations.length > 1" (click)="deletePack(l)">Supprimer le pack</button>
+    </mat-menu>
+  </tr>
+  <tr *ngIf="!beautifulTotal">
+    <th>TOTAL</th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th><span *ngIf="totalHT !== null">{{totalHT | number: '1.2-2'}}&nbsp;€</span></th>
+    <th></th>
+    <th><span *ngIf="total !== null">{{total | number: '1.2-2'}}&nbsp;€</span></th>
+    <th class="empty-cell-left"></th>
+  </tr>
+</table>

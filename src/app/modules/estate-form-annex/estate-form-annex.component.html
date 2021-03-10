@@ -1,0 +1,51 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+<div *ngIf="!loading">
+  <div class="two-column-grid">
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Type d'annexe *</mat-label>
+        <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" [(ngModel)]="typeId" (selectionChange)="changeSelectionState($event)" [disabled]="data.disabled">
+          <mat-option class="grey" *ngFor="let type of typeList" [value]="type">{{getName(type)}}</mat-option>
+          <mat-option class="grey" [value]="'unknow'">Inconnu</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Étage</mat-label>
+        <input matInput [(ngModel)]="currentData.floor" [disabled]="data.disabled">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Référence patrimoine</mat-label>
+        <input matInput [(ngModel)]="currentData.annexReference" [disabled]="data.disabled">
+      </mat-form-field>
+    </div>
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Partie commune ? *</mat-label>
+        <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" [(ngModel)]="currentData.isCommonArea" [disabled]="data.disabled">
+          <mat-option class="grey" [value]="true">Oui</mat-option>
+          <mat-option class="grey" [value]="false">Non</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Superficie</mat-label>
+        <input matInput [(ngModel)]="currentData.area" type="number" min="0" step="0.10" [disabled]="data.disabled">
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="form-bottom-actions">
+    <div class="form-bottom-actions-left grey">
+      <button mat-flat-button class="red-delete-button" *ngIf="!data.disabled && data.mode === mode.EDIT && data.deletable && !data.defaultData.deleted" [disabled]="saving"
+              (click)="delete(currentData)">Supprimer
+      </button>
+      <div class="warn" style="display: flex; margin-top: 5px;" *ngIf="data.defaultData && data.defaultData.deleted">
+        <mat-icon>warning</mat-icon>
+        <span style="margin-top: 4px; margin-left: 5px;">Annexe supprimée</span>
+      </div>
+    </div>
+    <div class="form-bottom-actions-right grey" *ngIf="!data.disabled">
+      <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="initialize(); cancelAction.emit()">Annuler</button>
+      <button mat-flat-button color="primary" [disabled]="saving || !isComplete()" (click)="save();">
+        {{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+    </div>
+  </div>
+</div>

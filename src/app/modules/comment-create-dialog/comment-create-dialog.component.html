@@ -1,0 +1,18 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+<h4 mat-dialog-title *ngIf="data && data.title">{{data.title}}</h4>
+<h4 mat-dialog-title *ngIf="!data || !data.title">Ajouter un commentaire</h4>
+<div mat-dialog-content class="text" style="padding: 0 25px;margin-bottom: 20px;font-weight: bold;color: red" *ngIf="!loading && data.message">
+  {{data.message}}
+</div>
+<div mat-dialog-content class="grey">
+  <mat-form-field appearance="outline" class="bigger-form-field" *ngIf="!loading">
+    <mat-label>Commentaire</mat-label>
+    <textarea matInput [(ngModel)]="comment" matTextareaAutosize matAutosizeMinRows="1" matAutosizeMaxRows="5" required></textarea>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions style="justify-content: flex-end;" *ngIf="!loading">
+  <button mat-button style="margin-right: 7px;" mat-dialog-close>Fermer</button>
+  <button mat-flat-button color="primary" [disabled]="!comment || comment.length < 1" (click)="save()">Valider</button>
+</div>

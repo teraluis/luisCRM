@@ -1,0 +1,157 @@
+.upload-panel {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-radius: 0;
+}
+
+.upload-panel.mat-expanded {
+  border-radius: 0 0 4px 4px !important;
+}
+
+.upload-panel-header {
+  height: 50px;
+  padding-left: 16px;
+  ::ng-deep .mat-expansion-indicator::after {
+    color: white !important;
+  }
+}
+
+.upload-element {
+  width: 100%;
+}
+
+.list-element {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #575656;
+  box-shadow: none;
+  padding-right: 0;
+  margin: -2px 0 0 0;
+  > .mat-expansion-panel-body {
+    margin-bottom: 20px;
+  }
+}
+
+.list-element-header {
+  padding: 0;
+  flex-direction: row-reverse;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  ::ng-deep .mat-expansion-indicator::after {
+    margin: 5px;
+  }
+  .mat-expansion-panel-body {
+    display: flex;
+  }
+}
+
+.no-list-element {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #575656;
+  box-shadow: none;
+  padding-right: 0;
+  margin: -2px 0 0 0;
+  cursor: unset !important;
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0;
+  }
+  ::ng-deep .mat-expansion-panel {
+    height: 0;
+  }
+
+}
+
+.no-list-element-header {
+  padding: 0;
+  flex-direction: row-reverse;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  margin-left: 2px;
+  cursor: unset !important;
+  ::ng-deep .mat-expansion-indicator::after {
+    display: none;
+  }
+}
+
+.open-file-element {
+  cursor: pointer;
+  float: left;
+  color: #575656;
+}
+
+.label-file-element {
+  float: left;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 5px;
+  margin-top: 3px;
+}
+
+.delete-file-element {
+  margin-left: auto;
+  cursor: pointer;
+  float: right;
+  color: #575656;
+}
+
+mat-label {
+  font-size: 0.9rem !important;
+  font-weight: normal !important;
+  height: 19px !important;
+  line-height: 1.19 !important;
+}
+
+.tree-element {
+  float: left;
+  margin-left: 10%;
+  font-size: 20px;
+}
+
+.old-file-element {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+li {
+  padding-left: 10px;
+  border: 1px dotted grey;
+  border-width: 0 0 1px 1px;
+  position: relative;
+  height: 15px;
+  width: 5px;
+  margin-left: 5px;
+  list-style: none;
+}
+
+li div {
+  margin: 0 0 0 10px;
+  position: relative;
+  top: 5px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.dialog-title {
+  font-family: Lato;
+  font-size: 16px;
+  color: #575656;
+}
+
+.dialog-text {
+  font-family: Lato;
+  font-size: 14px;
+}

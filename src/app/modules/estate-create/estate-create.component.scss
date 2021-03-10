@@ -1,0 +1,53 @@
+.stepper-disabled {
+  ::ng-deep .mat-horizontal-stepper-header {
+    pointer-events: none;
+  }
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 0 24px;
+  }
+}
+
+.stepper-hidden {
+  ::ng-deep .mat-horizontal-stepper-header-container {
+    display: none;
+  }
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 0 24px;
+  }
+}
+
+.search-bar {
+  ::ng-deep .mat-form-field-wrapper {
+    width: 96%;
+    margin-left: 3%;
+  }
+}
+
+.white-spinner {
+  ::ng-deep circle {
+    stroke: white !important;
+  }
+}
+
+::ng-deep .dialog-transparent {
+  mat-dialog-container{
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    color: transparent;
+    background-color: transparent;
+    overflow-x: hidden;
+  }
+}
+
+.hidden-header {
+  ::ng-deep .mat-tab-header {
+    display: none;
+  }
+}
+
+.grey-select {
+  ::ng-deep .mat-select-value-text {
+    color: #575656;
+  }
+}

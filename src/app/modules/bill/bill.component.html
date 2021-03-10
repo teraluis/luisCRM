@@ -1,0 +1,214 @@
+<div *ngIf="loading">
+  <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+</div>
+<div *ngIf="!loading && data.fullBill">
+  <mat-horizontal-stepper linear class="prestation-stepper" [selectedIndex]="currentIndex">
+    <mat-step *ngFor="let billPage of allBillPages; let i = index">
+      <div style="display: grid; grid-template-columns: auto 30%;grid-gap: 2%;">
+        <div>
+          <div class="fixed-bill modal-header">
+            <button mat-icon-button *ngIf="allBillPages.length > 1" [disabled]="i === 0" matStepperPrevious>
+              <mat-icon style="transform: rotate(-90deg); font-size: 30px;">arrow_circle_up</mat-icon>
+            </button>
+            <table style="display: inline;">
+              <ng-container>
+                <thead>
+                <th></th>
+                <th> Adresse</th>
+                <th *ngIf="billPage.intervention.asDraft().estateReference"> Ref. Patrimoine</th>
+                </thead>
+                <tbody>
+                <tr>
+                  <td>
+                    <mat-icon style="margin: auto">apartment</mat-icon>
+                  </td>
+                  <td>{{billPage.intervention.asDraft().estateAddress}}</td>
+                  <td *ngIf="billPage.intervention.asDraft().estateReference">Ref:
+                    {{billPage.intervention.asDraft().estateReference}}
+                  </td>
+                </tr>
+                </tbody>
+              </ng-container>
+            </table>
+            <button mat-icon-button *ngIf="allBillPages.length > 1"
+                    [disabled]="i === allBillPages.length - 1" matStepperNext>
+              <mat-icon style="transform: rotate(90deg); font-size: 30px;">arrow_circle_up</mat-icon>
+            </button>
+          </div>
+          <button *ngIf="valueFacturationAnalysis() != null" mat-icon-button #tooltip="matTooltip" matTooltip="{{billTooltip()}}"
+                  matTooltipHideDelay="100000" style="margin: auto 37% auto 10px;">
+            <mat-icon>info</mat-icon>
+          </button>
+          <div class="two-column-grid">
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="exported">
+                <mat-label>N° facture</mat-label>
+                <input matInput [(ngModel)]="data.fullBill.bill.name" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Compte de facturation</mat-label>
+                <input matInput [(ngModel)]="accountName" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Adresse</mat-label>
+                <input matInput [(ngModel)]="accountAddress1" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Code postal</mat-label>
+                <input matInput [(ngModel)]="accountPostCode" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Date d'échéance</mat-label>
+                <input matInput [(ngModel)]="deadlineString" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="asModal">
+                <mat-label>Devis</mat-label>
+                <input matInput *ngIf="data.order.estimate" [(ngModel)]="data.order.estimate.name" disabled>
+                <input matInput *ngIf="!data.order.estimate" value="Aucun devis" disabled>
+              </mat-form-field>
+              <!-- TODO handle several interventions -->
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="asModal">
+                <mat-label>N° intervention</mat-label>
+                <input matInput [(ngModel)]="billPage.intervention.asDraft().name" disabled>
+              </mat-form-field>
+            </div>
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="exported">
+                <mat-label>Date d'export</mat-label>
+                <input matInput value="{{data.fullBill.bill.exportDate | date: 'dd/MM/yyyy'}}" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>N° Siret</mat-label>
+                <input matInput [(ngModel)]="accountSiret" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Complément d'adresse</mat-label>
+                <input matInput [(ngModel)]="accountAddress2" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                <mat-label>Ville</mat-label>
+                <input matInput [(ngModel)]="accountCity" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="asModal">
+                <mat-label>Marché</mat-label>
+                <input matInput *ngIf="data.order.market || data.order.estimate.market"
+                       value="{{data.order.market.name + ' - ' + data.order.market.marketNumber}}" disabled>
+                <input matInput *ngIf="!data.order.market && (!data.order.estimate || !data.order.estimate.market)"
+                       value="Aucun marché" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="asModal">
+                <mat-label>Bon de commande</mat-label>
+                <input matInput [(ngModel)]="data.order.referenceNumber" disabled>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                              *ngIf="asModal">
+                <mat-label>Adresse d'intervention</mat-label>
+                <input matInput value="{{billPage.intervention.asDraft().estateAddress}}" disabled>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+        <div>
+          <mat-tab-group animationDuration="0ms" disableRipple="true" *ngIf="!loading">
+            <mat-tab label="Commentaires">
+              <ng-template matTabContent>
+                <app-events [headIcon]="'credit_card'" [dataComment]="dataComments" [ascending]="ascending"
+                            [disabled]="disabled" (orderChanged)="orderChanged()"
+                            (sendComment)="saveComment($event)"></app-events>
+              </ng-template>
+            </mat-tab>
+            <mat-tab label="Paiements"
+                     *ngIf="data.fullBill && data.fullBill.bill && data.fullBill.bill.status === 'billed'">
+              <ng-template matTabContent>
+                <div style="padding: 0 0 10px;margin-bottom: 20px;margin-top: 30px">
+                  <!-- TODO : to re-add when adding payment for individuals
+                  <div style="margin-bottom: 20px" *ngIf="data.order.status === 'honored'">
+                    <app-datefield [inputName]="'Date'" [initialValue]="paymentDate" [disabled]="false"
+                                   (valueChange)="payment.date = $event" (fieldChange)="0"></app-datefield>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                      <mat-label>Type</mat-label>
+                      <mat-select [(ngModel)]="paymentTypeName">
+                        <mat-option [value]="'Virement'" (click)="payment.type = 'vir'">Virement</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                      <mat-label>Montant TTC</mat-label>
+                      <input matInput type="number" [(ngModel)]="payment.value">
+                      <mat-icon matSuffix style="opacity: 50%;font-size: 18px">euro</mat-icon>
+                    </mat-form-field>
+                    <div style="text-align: center;width: 100%;margin-bottom: 20px">
+                      <button mat-flat-button color="accent" (click)="savePayment()"
+                              [disabled]="!payment.date || !payment.type || !payment.value" style="color: white">
+                        Ajouter un règlement
+                      </button>
+                    </div>
+                    <mat-divider></mat-divider>
+                  </div>
+                  -->
+                <div style="margin-top: 40px;text-align: right;font-size: 12px"
+                     *ngIf="data.order.status === 'honored'">
+                  <div class="label-block" style="color: black">Reste à payer
+                    <div class="label-border">{{total - paid | number: '1.2-2'}}&nbsp;€</div>
+                  </div>
+                  <div class="label-block" style="color: black">Payé
+                    <div class="label-border">{{paid | number: '1.2-2'}} €</div>
+                  </div>
+                </div>
+                <p *ngIf="data.order.status === 'closed'">La facture a été payée&nbsp;!</p>
+                <div style="margin-top: 20px;text-align: left;font-size: 12px">
+                  <p *ngFor="let p of data.fullBill.bill.paiements"><span class="small-badge"
+                                                                          style="background-color: #575656">&nbsp;</span>&nbsp;&nbsp;&nbsp;Virement
+                    de {{p.value}}€, le {{p.date | date: 'dd/MM/yyyy'}}</p>
+                </div>
+        </div>
+        </ng-template>
+        </mat-tab>
+        </mat-tab-group>
+      </div>
+</div>
+
+<h2>PRESTATIONS PRÉVUES
+  <mat-icon style="margin-left: 5px;vertical-align: text-bottom;cursor: pointer"
+            [routerLink]="['/orders', data.order.uuid]" [queryParams]="{tab: 3}" (click)="exit()">info_outline
+  </mat-icon>
+</h2>
+<app-billlines [lineDraftsSubject]="billPage.orderLines" [beautifulTotal]="false"
+               [analyseTypeList]="analyseTypeList"
+               [disabled]="alwaysDisable"></app-billlines>
+<h2>PRESTATIONS RÉALISÉES
+  <mat-icon style="margin-left: 5px;vertical-align: text-bottom;cursor: pointer"
+            [routerLink]="['/interventions', billPage.intervention.id, 'orders', data.order.uuid]"
+            [queryParams]="{tab: 2}" (click)="exit()">info_outline
+  </mat-icon>
+</h2>
+<app-billlines [lineDraftsSubject]="billPage.billLines" [beautifulTotal]="false" [disabled]="disableBillLines"
+               [analyseTypeList]="analyseTypeList"
+               [market]="data.order.market ? data.order.market.uuid : null" (valueChange)="setValue($event)"
+               (isValid)="checkDisable($event)"></app-billlines>
+</mat-step>
+</mat-horizontal-stepper>
+
+<div style="width: 100%; text-align: right">
+  <div class="label-block">MONTANT HT <div class="label-border">{{totalHT | number: '1.2-2'}} €</div></div>
+  <div class="label-block">MONTANT TVA <div class="label-border">{{totalTVA | number: '1.2-2'}} €</div></div>
+  <div class="label-block">MONTANT TTC <div class="label-border-accent">{{totalBill | number: '1.2-2'}} €</div></div>
+</div>
+
+<div class="bottom-right" style="margin-top: 10px" *ngIf="data.fullBill.bill.lignes.length === 0 && !disabled">
+  <button mat-flat-button color="accent" (click)="bill()" [disabled]="disableButton"
+          style="font-size: 16px;padding: 15px">Facturer
+  </button>
+</div>
+
+  <div class="bottom-left" style="margin-top: 10px" *ngIf="data.fullBill.bill.status === 'pending' && data.interventions.length > 1 && !disabled">
+    <button mat-flat-button color="accent" (click)="unmerge()"
+            style="font-size: 16px;padding: 15px">Dissocier
+    </button>
+  </div>
+</div>

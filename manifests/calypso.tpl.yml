@@ -1,0 +1,30 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: calypso
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: calypso
+    spec:
+      containers:
+        - name: calypso
+          image: REGISTRY/adx/calypso:TPL_DOCKER_IMG_VERSION
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+      - name: fbk-regsecret
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: calypso
+spec:
+  selector:
+    app: calypso
+  ports:
+    - port: 80

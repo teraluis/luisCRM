@@ -1,0 +1,85 @@
+<mat-progress-bar *ngIf="workInProgress" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="breadcrumb"><span style="margin-right: 10px">Administration</span> / <span
+    style="font-weight: bold;margin-left: 10px">Exports</span></div>
+</div>
+
+<div class="grid-container background" id="window">
+  <div class="main-content">
+    <mat-tab-group animationDuration="0ms" disableRipple="true">
+      <mat-tab label="Facture">
+        <mat-card class="form-card mat-elevation-z0">
+          <mat-card-content style="padding: 40px">
+            <h3>Export facture</h3>
+            <div class="two-column-grid">
+              <div class="column">
+                <app-datefield [inputName]="'Du'" (valueChangeOutput)="billStartDate = $event"></app-datefield>
+              </div>
+              <div class="column">
+                <app-datefield [inputName]="'Au'" (valueChangeOutput)="billEndDate = $event"></app-datefield>
+              </div>
+            </div>
+            <div class="bottom-right">
+              <button mat-raised-button color="primary" (click)="exportBills()">Exporter</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+      <mat-tab label="Encaissement">
+        <mat-card class="form-card mat-elevation-z0">
+          <mat-card-content style="padding: 40px">
+            <h3>Export encaissement</h3>
+            <div class="two-column-grid">
+              <div class="column">
+                <app-datefield [inputName]="'Du'" (valueChangeOutput)="paymentStartDate = $event"></app-datefield>
+              </div>
+              <div class="column">
+                <app-datefield [inputName]="'Au'" (valueChangeOutput)="paymentEndDate = $event"></app-datefield>
+              </div>
+            </div>
+            <div class="bottom-right">
+              <button mat-raised-button color="primary" (click)="exportPayments()">Exporter</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+      <mat-tab label="Encours">
+        <mat-card class="form-card mat-elevation-z0">
+          <mat-card-content style="padding: 40px">
+            <h3>Export encours</h3>
+            <div class="two-column-grid">
+              <div class="column">
+                <app-datefield [inputName]="'Du'" (valueChangeOutput)="inProgressStartDate = $event"></app-datefield>
+              </div>
+              <div class="column">
+                <app-datefield [inputName]="'Au'" (valueChangeOutput)="inProgressEndDate = $event"></app-datefield>
+              </div>
+            </div>
+            <div class="bottom-right">
+              <button mat-raised-button color="primary" (click)="exportInProgress()">Exporter</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+      <mat-tab label="Recouvrement">
+        <mat-card class="form-card mat-elevation-z0">
+          <mat-card-content style="padding: 40px">
+            <h3>Export recouvrement</h3>
+            <div class="two-column-grid">
+              <div class="column">
+                <app-datefield [inputName]="'Du'" (valueChangeOutput)="recoveryStartDate = $event"></app-datefield>
+              </div>
+              <div class="column">
+                <app-datefield [inputName]="'Au'" (valueChangeOutput)="recoveryEndDate = $event"></app-datefield>
+              </div>
+            </div>
+            <div class="bottom-right">
+              <button mat-raised-button color="primary" (click)="exportRecovery()">Exporter</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

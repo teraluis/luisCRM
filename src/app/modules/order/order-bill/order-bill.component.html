@@ -1,0 +1,14 @@
+<div>
+  <app-table-search-list [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns"
+                         [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                         [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading"
+                         (selectionChange)="select($event)" (pageData)="setPageData($event)"
+                         (filterData)="setFilterData($event)" (clickEvent)="clickEvent($event)"
+                         [statusList]="getStatusList" [statusName]="getStatusName"
+                         [statusColor]="getStatusColor"></app-table-search-list>
+</div>
+<div style="display: flex; float: left; margin-top: 20px;" *ngIf="!isEmpty">
+  <button mat-flat-button color="primary" [disabled]="disableMerge" (click)="mergeBills(selectedBills.selected)">
+    <span style="display: flex;"><mat-icon style="margin: auto 5px auto -5px; font-size: 20px; height: 20px;">content_copy</mat-icon><span>Associer les factures</span></span>
+  </button>
+</div>

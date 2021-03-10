@@ -1,0 +1,38 @@
+
+<mat-button-toggle-group class="grey-checked-option" style="width: 99%; margin: 0 0 15px 0.5%;" [(ngModel)]="selectedType" (valueChange)="resetData()" *ngIf="!data.disabled">
+  <mat-button-toggle class="grey" style="width: 100%;" *ngFor="let type of destinationTypes" [value]="type">{{type}}</mat-button-toggle>
+</mat-button-toggle-group>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="selectedType === types.MAIL">
+  <mat-label>Mail *</mat-label>
+  <input matInput [(ngModel)]="currentData.mail" [disabled]="data.disabled">
+</mat-form-field>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="selectedType === types.URL">
+  <mat-label>Url *</mat-label>
+  <input matInput [(ngModel)]="currentData.url" [disabled]="data.disabled">
+</mat-form-field>
+
+<div class="form-bottom-actions" *ngIf="!data.disabled && (selectedType === types.MAIL || selectedType === types.URL)">
+  <div class="form-bottom-actions-left grey" *ngIf="data.mode === 'edit' && data.deletable">
+    <button mat-flat-button class="red-delete-button" [disabled]="saving" (click)="delete(currentData)">Supprimer</button>
+  </div>
+  <div class="form-bottom-actions-right grey">
+    <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="saving || !isComplete()"
+            (click)="save()">Enregistrer
+    </button>
+  </div>
+</div>
+
+<app-contact-form *ngIf="selectedType === types.PEOPLE"
+                  [data]="{mode: data.defaultData && data.defaultData.people ? 'edit' : 'create_or_search', disabled: data.disabled, defaultData: {people: currentData.people}, deletable: data.deletable}"
+                  (contactSaved)="saveContact($event)" (cancelAction)="cancel()"></app-contact-form>
+
+<app-address-form *ngIf="selectedType === types.ADDRESS"
+                  [data]="{mode: data.defaultData && data.defaultData.address ? 'edit' : 'create', disabled: data.disabled, defaultData: {address: currentData.address}, types: addressTypes, deletable: data.deletable}"
+                  (addressSaved)="saveAddress($event)" (cancelAction)="cancel()"></app-address-form>
+
+<app-establishment-form *ngIf="selectedType === types.ESTABLISHMENT"
+                        [data]="{mode: 'search', disabled: data.disabled, defaultData: {establishment: currentData.establishment}, deletable: data.deletable}"
+                        (establishmentSaved)="saveEstablishment($event)" (cancelAction)="cancel()"></app-establishment-form>

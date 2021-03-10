@@ -1,0 +1,30 @@
+<form [formGroup]="marketUserForm" (ngSubmit)="save()">
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" style="margin-top: 2%;">
+    <mat-label>Rôle</mat-label>
+    <mat-select class="grey-select" formControlName="role">
+      <mat-option class="grey" *ngIf="marketUserForm.get('role').disabled"
+                  [value]="marketUserForm.get('role').value">{{marketUserForm.get('role').value}}</mat-option>
+      <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+    <mat-label><span *ngIf="!data.disableUser">Rechercher</span><span *ngIf="data.disableUser">Contact</span></mat-label>
+    <input matInput formControlName="user" [matAutocomplete]="auto">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option class="grey" *ngFor="let user of suggestedUsers" [value]="user">
+        {{user}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <div class="form-bottom-actions" *ngIf="!data.disabled">
+    <div class="form-bottom-actions-left grey">
+      <button mat-flat-button class="red-delete-button" *ngIf="data.deletable && data.defaultData && data.defaultData.user && data.defaultData.user.login"
+              (click)="delete()">Supprimer</button>
+    </div>
+    <div class="form-bottom-actions-right grey">
+      <button mat-flat-button type="button" style="margin-right: 7px;" (click)="cancel()">Annuler</button>
+      <button mat-flat-button type="submit" color="primary" [disabled]="!(this.marketUserForm.dirty && this.marketUserForm.valid)">
+        {{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+    </div>
+  </div>
+</form>

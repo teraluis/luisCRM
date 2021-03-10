@@ -1,0 +1,56 @@
+<mat-progress-bar mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
+<mat-progress-bar mode="determinate" *ngIf="isSaving" [value]="progress"></mat-progress-bar>
+
+<div mat-dialog-title class="color-primary">Ajouter des résultats à l'intervention</div>
+
+<div mat-dialog-content *ngIf="!isLoading">
+  <input #fileInput hidden (change)="loadFile($event)" type="file">
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+    <mat-label>Joindre un rapport*</mat-label>
+    <input matInput style="cursor: pointer"
+           [value]="file?.name"
+           (click)="fileInput.click()"
+           (keydown)="preventEventKeyboard($event)"
+           [disabled]="isSaving || isLoading">
+    <mat-icon matPrefix style="cursor: pointer" (click)="fileInput.click()" >attach_file</mat-icon>
+    <mat-icon *ngIf="file" matSuffix style="cursor: pointer" (click)="clearFile()">clear</mat-icon>
+  </mat-form-field>
+
+<!-- TODO refactor with multi select list like in order prestation dialog -->
+  <h3 class="mat-h3" style="margin-bottom: 0px">Prestations effectuées: </h3>
+
+  <div class="custom-list">
+    <div *ngFor="let techAct of resultSelectionList; let idx = index;" class="custom-list-item">
+      <span class="">
+        <mat-checkbox [checked]="techAct.isSelected" (change)="toggleSelection(idx)" [disabled]="isSaving || techAct.isRealised">{{techAct.label}}</mat-checkbox>
+      </span>
+
+      <span *ngIf="techAct.isSelected && techAct.hasAnalyse">
+        <mat-form-field floatLabel="always" appearance="outline" class="custom-form-field" color="accent">
+          <mat-label>Nombre de prélèvement réalisées*</mat-label>
+          <input style="font-size: 14px;" matInput type="number" min="0" max="99999"
+                 [disabled]="isSaving || techAct.isRealised"
+                 (change)="updateSampleQ(idx, $event.target.value)"
+                 [value]="techAct.sampleQuantity.toString()">
+        </mat-form-field>
+
+        <mat-form-field floatLabel="always" appearance="outline" class="custom-form-field" color="accent">
+          <mat-label>Nombre d'analyses réalisées*</mat-label>
+          <input style="font-size: 14px;" matInput type="number" min="0" max="99999"
+                 [disabled]="isSaving || techAct.isRealised"
+                 (change)="updateAnalyseQ(idx, $event.target.value)"
+                 [value]="techAct.analyseQuantity.toString()">
+        </mat-form-field>
+      </span>
+
+    </div>
+  </div>
+</div>
+
+
+
+<div mat-dialog-actions style="justify-content: flex-end;">
+  <button mat-button style="margin-right: 7px; background-color: white;" [disabled]="isSaving" mat-dialog-close>Annuler</button>
+  <button mat-flat-button color="primary" [disabled]="isSaving || !canSave()" (click)="save()">Enregistrer</button>
+</div>
+

@@ -1,0 +1,9 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-report-destination-form
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (removeRepDest)="close($event)"
+    (repDestSaved)="close($event)">
+  </app-report-destination-form>
+</div>

@@ -1,0 +1,86 @@
+<form [formGroup]="productForm" (ngSubmit)="save()">
+<div class="two-column-grid" style="margin-top: 30px;">
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code prestation *</mat-label>
+        <input matInput formControlName="prestationCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Description *</mat-label>
+        <input matInput formControlName="description" >
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Actif *</mat-label>
+        <mat-select formControlName="validity">
+          <mat-option value="true">oui</mat-option>
+          <mat-option value="false">non</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Commentaire</mat-label>
+        <input matInput formControlName="comment" >
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Périmetre / Surface *</mat-label>
+        <mat-select formControlName="surfaceType">
+          <mat-option *ngFor="let surface of surfaceTypeChoice" [value]="surface.label">
+            {{surface.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Type*</mat-label>
+        <mat-select formControlName="productType">
+          <mat-option *ngFor="let product of productTypeChoice" [value]="product.label">
+            {{product.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code offre</mat-label>
+        <input matInput formControlName="offerCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Web *</mat-label>
+        <mat-select formControlName="webActive">
+          <mat-option value="true">oui</mat-option>
+          <mat-option value="false">non</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code terrain</mat-label>
+        <input matInput formControlName="fieldCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Matériel nécessaire *</mat-label>
+        <input matInput formControlName="equipment">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Classement *</mat-label>
+        <input matInput formControlName="jobRank">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Code finance *</mat-label>
+        <input matInput formControlName="businessCode">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+        <mat-label>Métier vue expertise *</mat-label>
+        <mat-select formControlName="targetId">
+          <mat-option *ngFor="let technical of technicalProductChoice" [value]="technical.id">
+            {{technical.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+ <div class="form-bottom-actions">
+   <div class="form-bottom-actions-right grey">
+     <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+     <button type="submit" mat-flat-button color="primary"
+             [disabled]="saving || !(this.productForm.dirty && this.productForm.valid)"
+     >Enregistrer</button>
+   </div>
+ </div>
+</form>

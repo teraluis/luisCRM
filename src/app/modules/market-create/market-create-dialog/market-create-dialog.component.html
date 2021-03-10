@@ -1,0 +1,9 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-market-create
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (removeMarket)="close(null)"
+    (marketSaved)="close($event)">
+  </app-market-create>
+</div>

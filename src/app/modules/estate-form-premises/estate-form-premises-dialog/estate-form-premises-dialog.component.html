@@ -1,0 +1,9 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-estate-form-premises
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (removePremises)="close(null)"
+    (premisesSaved)="close($event)">
+  </app-estate-form-premises>
+</div>

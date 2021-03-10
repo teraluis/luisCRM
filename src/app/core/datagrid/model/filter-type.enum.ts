@@ -1,0 +1,10 @@
+export enum FilterType {
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  SELECT = 'SELECT',
+  MULTISELECT = 'MULTISELECT',
+  BOOKMARK = 'BOOKMARK',
+  STATUS = 'STATUS',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME'
+}

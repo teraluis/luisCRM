@@ -1,0 +1,12 @@
+{
+  "role" : "catégorie",
+  "address1": "adresse principale",
+  "address2": "complément d'adresse",
+  "city" : "ville",
+  "postCode": "code postal",
+  "type": "type",
+  "staircase": "cage d'escalier",
+  "gpsCoordinates": "coordonées GPS",
+  "required": "obligatoire"
+
+}

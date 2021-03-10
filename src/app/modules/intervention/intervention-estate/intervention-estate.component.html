@@ -1,0 +1,5 @@
+<div *ngIf="!loading">
+  <app-table-search-list style="display: flex" [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                         [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading" [comboList]="getComboList"
+                         (pageData)="setPageData($event)" (filterData)="setFilterData($event)" (clickEvent)="clickEvent($event)"></app-table-search-list>
+</div>

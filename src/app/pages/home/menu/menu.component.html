@@ -1,0 +1,22 @@
+<a mat-list-item *ngIf="menuItem.isMenuItem && menuItem.asMenuItem().enable" (click)="onItemSelected(menuItem.asMenuItem())"  [ngClass]="{'menu-entry-active': isActiveRoute()}"
+  class="menu-entry" [ngStyle]="{'padding-left': (depth * 12) + 'px'}">
+  <mat-icon *ngIf="isExpanded == show" matTooltip="{{menuItem.asMenuItem().label}}"
+    mat-list-icon [ngClass]="{'icon-active' : isActiveRoute(), 'icon-inactive':!isActiveRoute(), 'icon-disable':!menuItem.asMenuItem().enable}">{{ menuItem.asMenuItem().icon}}</mat-icon>
+  <mat-icon  *ngIf="!isExpanded == hide"
+    mat-list-icon [ngClass]="{'icon-active' : isActiveRoute(), 'icon-inactive':!isActiveRoute(), 'icon-disable':!menuItem.asMenuItem().enable}">{{ menuItem.asMenuItem().icon}}</mat-icon>
+  <p matLine *ngIf="isExpanded"
+     class="menu-entry-text" [ngStyle]="{'width': 'calc(8rem - '+(depth * 12) + 'px)'}" [ngClass]="{'menu-entry-margin': isActiveRoute(), 'menu-disable':!menuItem.asMenuItem().enable}">{{menuItem.asMenuItem().label}}
+  </p>
+  <span matSuffix  *ngIf="!isExpanded == hide && menuItem.asMenuItem().children && menuItem.asMenuItem().children.length">
+    <mat-icon [ngClass]="{'icon-active' : menuItem.asMenuItem().active, 'icon-inactive':!menuItem.asMenuItem().active, 'icon-disable':!menuItem.asMenuItem().enable}" [@indicatorRotate]="showSubMenu ? 'expanded': 'collapsed'">
+      expand_more
+    </mat-icon>
+  </span>
+</a>
+<mat-divider *ngIf="!menuItem.isMenuItem" style="border-top-color:#fafdff !important;"></mat-divider>
+<div *ngIf="showSubMenu">
+  <app-menu-component *ngFor="let child of menuItem.asMenuItem().children"
+    [menuItem]="child" [depth]="depth+1" [isExpanded]="isExpanded">
+  </app-menu-component>
+</div>
+

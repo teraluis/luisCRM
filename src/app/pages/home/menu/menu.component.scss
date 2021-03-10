@@ -1,0 +1,53 @@
+@import "../../../../variables.scss";
+
+:host {
+  .mat-list-item {
+    display: flex;
+    width: auto;
+  }
+}
+
+.menu-entry-text {
+  font-weight: normal !important;
+  font-size: 0.9rem !important;
+  color: #FFFFFF;
+}
+
+.menu-entry-active {
+  border-left: 5px solid $adx-grey;
+  background-color: $background;
+}
+
+.menu-entry-disable {
+  color: $primary;
+}
+
+.icon-menu {
+  color: #FFFFFF;
+}
+
+.icon-active {
+  margin-left: -3px;
+  color: $adx-grey;
+}
+
+.icon-inactive {
+  color: #FFFFFF;
+}
+
+.icon-disable {
+  color: #c9c9c9;
+}
+
+.menu-disable {
+  color: #c9c9c9;
+}
+
+.menu-entry {
+  height: 46px !important;
+}
+
+.menu-entry-margin {
+  margin-left: -3px;
+  color: $adx-grey;
+}

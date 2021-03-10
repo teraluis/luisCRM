@@ -1,0 +1,274 @@
+<div *ngIf="loading">Chargement en cours...</div>
+<div *ngIf="!loading">
+
+<!--    MESSAGE WHEN UNHANDLED RESULTS -->
+<mat-card *ngIf="!intervention.isIncomplete && !intervention.isDone" class="warning-banner">
+  <mat-icon>warning</mat-icon>
+  <div class="warning-text">Les résultats du rapport ne sont pas disponibles</div>
+</mat-card>
+
+<!--    MESSAGE FOR INCOMPLETE RESULTS -->
+<mat-card *ngIf="intervention.isIncomplete" class="warning-banner">
+  <span style="display: flex;">
+    <mat-icon style="margin-top: 4px;">warning</mat-icon>
+    <!--  TODO udpate warning message -->
+    <div class="warning-text">Attention : ces résulats ne sont peut être pas définitif, le dossier n'a pas été clos par l'expert</div>
+  </span>
+</mat-card>
+
+<!--    ADRESSE -->
+<div class="category-block">
+  <span class="category-title">Adresse du bien :</span>
+  <span class="category-desc">{{getFullAddress(address)}}</span>
+</div>
+
+<!--    TYPOLOGIE -->
+<div class="category-block">
+  <span class="category-title">Typologie de bien :</span>
+  <span class="category-desc">{{getEstateType() | titlecase}}</span>
+</div>
+
+<!--    CONTACT D'ENVOIE DU RAPPORT -->
+<div class="category-block">
+  <div class="category-title">Contact(s) d'envoi du rapport :</div>
+  <div class="contact-block">
+    <mat-chip-list><mat-chip class="chipFilterColor" *ngFor="let recipient of order.reportDestinations">{{recipientDisplayer(recipient)}}</mat-chip></mat-chip-list>
+  </div>
+</div>
+
+  <!--    EXPERT INTERVENU -->
+  <div class="category-block" *ngIf="!!intervention.parameters.expertLabel">
+    <div class="category-title">Expert intervenu :</div>
+    <div class="contact-block">
+      <mat-chip-list><mat-chip class="chipFilterColor">{{intervention.parameters.expertLabel}}</mat-chip></mat-chip-list>
+    </div>
+  </div>
+
+
+<div class="category-block" style="display: flex">
+<!--    COMMANDE -->
+  <mat-card class="no-shadow custom-card">
+    <mat-card-title class="custom-card-title">
+      Commandé par le client
+    </mat-card-title>
+    <mat-card-content class="custom-card-content">
+      <!--    PRESTATIONS COMMANDEES -->
+      <div class="sub-category">
+        <span *ngFor="let pc of prestationCheckList" class="prestation-types">
+          <mat-checkbox color="accent"
+                        *ngIf="pc.planned"
+                        [(ngModel)]="pc.planned"
+                        [ngClass]="{bold: pc.planned}"
+                        [disabled]="true">
+            {{pc.prestationTypeInput.shortcut}}
+          </mat-checkbox>
+        </span>
+      </div>
+
+<!--      &lt;!&ndash;    CERTIFICATIONS REQUISES &ndash;&gt;-->
+<!--      <div class="sub-category" *ngIf="order.requiredCertification && order.requiredCertification.length > 0">-->
+<!--        <div class="category-title">Certification requise :</div>-->
+<!--        <button *ngFor="let certif of order.requiredCertification"-->
+<!--                mat-stroked-button-->
+<!--                class="certificate"-->
+<!--                [ngClass]="{'highlighted': certif.valid}"-->
+<!--                disabled>-->
+<!--          {{certif.name | titlecase}}-->
+<!--        </button>-->
+<!--      </div>-->
+
+      <!--    ANALYSES ESTIMEES -->
+      <div *ngIf="raatResult || dappResult" class="sub-category">
+        <div style="display: flex">
+          <div class="category-title"></div>
+        </div>
+        <div style="display: flex">
+          <div class="category-title">Nombre d'analyses estimées :</div>
+          <div class="category-desc" *ngIf="orderedAnalyses > 0">{{orderedAnalyses}}</div>
+          <div class="category-desc" *ngIf="!orderedAnalyses || orderedAnalyses < 1">-</div>
+        </div>
+      </div>
+
+      <!--    DESC TRVX -->
+      <div class="sub-category" *ngIf="order.workdescription">
+        <div class="category-title">Descriptif travaux :</div>
+        <textarea disabled class="work-desc">{{order.workdescription}}</textarea>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+<!--    EXPERT -->
+  <mat-card class="no-shadow custom-card highlighted">
+    <mat-card-title class="custom-card-title">
+      Réalisé par l'expert
+    </mat-card-title>
+    <mat-card-content class="custom-card-content">
+      <!--    PRESTATIONS REALISEES -->
+      <div class="sub-category">
+        <span *ngFor="let pc of prestationCheckList" class="prestation-types">
+          <mat-checkbox color="accent"
+                        [(ngModel)]="pc.performed"
+                        [ngClass]="{bold: pc.performed, unplanned: pc.performed && !pc.planned}"
+                        [disabled]="true">
+            {{pc.prestationTypeInput.shortcut}}
+          </mat-checkbox>
+        </span>
+      </div>
+
+<!--      &lt;!&ndash;    CERTIFICATIONS POSSEDEES &ndash;&gt;-->
+<!--      <div class="sub-category" *ngIf="expert.certifications || order.requiredCertification">-->
+<!--        <div class="category-title">Certification requise :</div>-->
+<!--        <button *ngIf="expert.certifications.length < 1" mat-stroked-button class="certificate highlighted" disabled>-->
+<!--          Aucune connue-->
+<!--        </button>-->
+<!--        <button *ngFor="let certif of expert.certifications"-->
+<!--                mat-stroked-button-->
+<!--                class="certificate"-->
+<!--                [ngClass]="{'highlighted': certif.valid}"-->
+<!--                disabled>-->
+<!--          {{certif.name | titlecase}}-->
+<!--        </button>-->
+<!--      </div>-->
+
+      <!--    ANALYSES REALISEES RAAT -->
+      <div *ngIf="raatResult || dappResult" class="sub-category">
+        <div style="display: flex">
+          <div class="category-title">Nombre de prélèvements réels :</div>
+          <div class="category-desc">{{(analyseCountTotal) || "-"}}</div>
+        </div>
+        <div style="display: flex">
+          <div class="category-title">Nombre d'analyses réelles :</div>
+          <div [class]="analysesLaboTotal > orderedAnalyses ? 'category-desc highlighted': 'category-desc'">{{(analysesLaboTotal) || "-"}}</div>
+          <div class="warn-icon">
+            <mat-icon *ngIf="analysesLaboTotal > orderedAnalyses">warning</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <!--    DESC TRVX -->
+      <div class="sub-category" *ngIf="order.workdescription">
+        <div class="category-title">Descriptif des travaux réels :</div>
+        <textarea disabled class="work-desc">{{order.workdescription}}</textarea>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!--    CONDITIONAL RESULTS -->
+<div class="category-block">
+  <!--    RAAT -->
+  <mat-expansion-panel *ngIf="raatResult" [expanded]="true">
+    <mat-expansion-panel-header class="result-panel-header">
+      <mat-panel-title>
+        <mat-icon *ngIf="!!raatReportLink" class="download-icon" (click)="openDocument($event, raatReportLink)">save_alt</mat-icon>
+        <mat-icon *ngIf="!raatReportLink" class="download-icon-disabled">save_alt</mat-icon>
+        &nbsp;&nbsp;RAAT
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Anomalie :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="!raatResult.isPresent">Absence</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="raatResult.isPresent">Présence</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </mat-expansion-panel>
+
+  <!--    DAPP -->
+  <mat-expansion-panel *ngIf="dappResult" [expanded]="true">
+    <mat-expansion-panel-header class="result-panel-header">
+      <mat-panel-title>
+        <mat-icon *ngIf="!!dappReportLink" class="download-icon" (click)="openDocument($event, dappReportLink)">save_alt</mat-icon>
+        <mat-icon *ngIf="!dappReportLink" class="download-icon-disabled">save_alt</mat-icon>
+        &nbsp;&nbsp;DAPP
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Anomalie :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="!dappResult.isPresent">Absence</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="dappResult.isPresent">Présence</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </mat-expansion-panel>
+
+  <!--    GAZ -->
+  <mat-expansion-panel *ngIf="gasResult" [expanded]="true">
+    <mat-expansion-panel-header class="result-panel-header">
+      <mat-panel-title>
+        <mat-icon *ngIf="!!gasReportLink" class="download-icon" (click)="openDocument($event, gasReportLink)">save_alt</mat-icon>
+        <mat-icon *ngIf="!gasReportLink" class="download-icon-disabled">save_alt</mat-icon>
+        &nbsp;&nbsp;GAZ
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Présence :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="gasResult.isPresent">Oui</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="!gasResult.isPresent">Non</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Anomalie :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="(
+          (gasResult.anomalyType1 ? gasResult.anomalyType1 : 0)
+           + (gasResult.anomalyType2 ? gasResult.anomalyType2 : 0)
+           + (gasResult.anomalyType3 ? gasResult.anomalyType3 : 0)
+           + (gasResult.anomaly32C ? gasResult.anomaly32C : 0)
+           + (gasResult.anomalyImmediateDanger ? gasResult.anomalyImmediateDanger : 0)
+              ) === 0">Absence</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="(
+          (gasResult.anomalyType1 ? gasResult.anomalyType1 : 0)
+           + (gasResult.anomalyType2 ? gasResult.anomalyType2 : 0)
+           + (gasResult.anomalyType3 ? gasResult.anomalyType3 : 0)
+           + (gasResult.anomaly32C ? gasResult.anomaly32C : 0)
+           + (gasResult.anomalyImmediateDanger ? gasResult.anomalyImmediateDanger : 0)
+              ) !== 0">Présence</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </mat-expansion-panel>
+
+  <!--    ELEC -->
+  <mat-expansion-panel *ngIf="elecResult" [expanded]="true">
+    <mat-expansion-panel-header class="result-panel-header">
+      <mat-panel-title>
+        <mat-icon *ngIf="!!elecReportLink" class="download-icon" (click)="openDocument($event, elecReportLink)">save_alt</mat-icon>
+        <mat-icon *ngIf="!elecReportLink" class="download-icon-disabled">save_alt</mat-icon>
+        &nbsp;&nbsp;ELEC
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Présence :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="elecResult.electricityPresence">Oui</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="!elecResult.electricityPresence">Non</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+    <div class="result-block">
+      <div style="display: flex">
+        <div class="result-title">Anomalie :</div>
+        <mat-button-toggle-group disabled class="button-small-height">
+          <mat-button-toggle class="positive" [checked]="!elecResult.anomalyPresence">Absence</mat-button-toggle>
+          <mat-button-toggle class="negative" [checked]="elecResult.anomalyPresence">Présence</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </mat-expansion-panel>
+</div>
+
+</div>

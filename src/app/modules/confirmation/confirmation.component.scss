@@ -1,0 +1,17 @@
+@import "../../../variables.scss";
+
+.mat-h1 {
+  color: $primary;
+}
+
+button + button {
+  margin: 15px;
+}
+
+::ng-deep.mat-button-focus-overlay {
+  background-color: white;
+}
+
+::ng-deep.div mat-button-ripple-mat-ripple {
+  background-color: white;
+}

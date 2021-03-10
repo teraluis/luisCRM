@@ -1,0 +1,88 @@
+<form [formGroup]="contactForm">
+  <div>
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" *ngIf="data.roles">
+      <mat-label>Rôle *</mat-label>
+      <mat-select [ngClass]="data.disabled || data.disabledRole ? '' : 'grey-select'" formControlName="role">
+        <mat-option class="grey" *ngFor="let role of data.roles" [value]="role">{{role}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div *ngIf="!viewForm && (data.mode === mode.SEARCH || data.mode === mode.CREATE_OR_SEARCH)">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" style="margin-bottom: 15px;">
+        <mat-label>Rechercher</mat-label>
+        <input matInput [formControl]="search" [matAutocomplete]="auto" [disabled]="data.disabled">
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option class="grey" *ngFor="let people of suggestedPeople" [value]="getName(people)" (click)="onSelectPeople(people)">
+          <span style="display: flex; width: 100%;">
+            <span
+              style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{people.title}}</span>
+            <span
+              style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{getName(people)}}</span>
+            <span
+              style="width: 20%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{people.mobilePhone}}</span>
+            <span
+              style="width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{people.email}}</span>
+          </span>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+    <div *ngIf="viewForm && (data.mode === mode.CREATE || data.mode === mode.EDIT|| data.mode === mode.CREATE_OR_SEARCH)">
+      <div class="two-column-grid">
+        <div class="column">
+          <div style="display: flex;">
+            <!--blank--><mat-form-field style="visibility: hidden; width: 1px;" appearance="outline"><mat-label>blank</mat-label><input matInput disabled></mat-form-field>
+            <mat-button-toggle-group style="margin: auto; width: 97%;" class="grey-checked-option" formControlName="title">
+              <mat-button-toggle class="grey" style="width: 50%;" value="Madame">Madame</mat-button-toggle>
+              <mat-button-toggle class="grey" style="width: 50%;" value="Monsieur">Monsieur</mat-button-toggle>
+            </mat-button-toggle-group>
+            <!--blank--><mat-form-field style="visibility: hidden; width: 1px;" appearance="outline"><mat-label>blank</mat-label><input matInput disabled></mat-form-field>
+          </div>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Nom *</mat-label>
+            <input matInput formControlName="lastname">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="firstname">
+          </mat-form-field>
+        </div>
+        <div class="column">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Téléphone *</mat-label>
+            <input matInput formControlName="mobilePhone">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Mail {{isEmailRequired() ? '*' : ''}}</mat-label>
+            <input matInput formControlName="email">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+            <mat-label>Fonction</mat-label>
+            <input matInput formControlName="jobDescription">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-bottom-actions" *ngIf="!data.disabled">
+    <div class="form-bottom-actions-left grey">
+      <button mat-flat-button type="button" class="red-delete-button" *ngIf="data.mode === mode.EDIT && data.deletable" [disabled]="saving"
+              (click)="delete(currentData)">Supprimer
+      </button>
+      <button mat-button type="button" style="padding-left: 10px;" *ngIf="data.mode === mode.CREATE_OR_SEARCH && viewForm" [disabled]="saving"
+              (click)="changeMode()">
+        <mat-icon>search</mat-icon>
+        <span style="padding-left: 5px;">Rechercher un contact existant</span>
+      </button>
+      <button mat-flat-button type="button" style="padding-left: 0;" *ngIf="data.mode === mode.CREATE_OR_SEARCH && !viewForm" [disabled]="saving"
+              (click)="changeMode()">
+        <mat-icon>add</mat-icon>
+        <span style="padding-left: 5px;">Créer un nouveau contact</span>
+      </button>
+    </div>
+    <div class="form-bottom-actions-right grey">
+      <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button *ngIf="data.inStep" mat-flat-button color="primary" [disabled]="saving|| !(this.contactForm.dirty && this.contactForm.valid)" (click)="save()">Suivant</button>
+      <button *ngIf="!data.inStep" mat-flat-button color="primary" [disabled]="saving|| !(this.contactForm.dirty && this.contactForm.valid)" (click)="save()">Enregistrer</button>
+    </div>
+  </div>
+</form>

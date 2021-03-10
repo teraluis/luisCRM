@@ -1,0 +1,184 @@
+<div class="page-title content-margin">
+  <div class="breadcrumb" *ngIf="isLoading">Chargement...</div>
+  <div class="breadcrumb" *ngIf="!isLoading">
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/establishments']">Liste des établissements</a></span>&nbsp;/&nbsp;&nbsp;
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/comptes', full.account.uuid]">Client {{getName(full.account)}}</a></span>&nbsp;/&nbsp;&nbsp;
+    <span style="font-weight: bold;margin-right: 5px">Établissement {{full.establishment.name}}</span>
+    <button style="border-style: none;cursor: pointer" class="copyButton" (click)="copyMessage(full.establishment.name)"></button>
+  </div>
+</div>
+
+<div style="display: flex;" id="window">
+  <div style="margin-left: 2%; display: flex; width: 100%;">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" class="establishment-tab-group" style="width: 100%;">
+
+      <!-- Établissement -->
+      <mat-tab label="Établissement">
+        <div *ngIf="isLoading">
+          <mat-expansion-panel style="margin-bottom: 15px; border-radius: 0 0 5px 5px; pointer-events: none; box-shadow: none;" [expanded]="false" hideToggle>
+            <mat-expansion-panel-header>
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+        </div>
+        <div *ngIf="!isLoading">
+          <mat-expansion-panel style="margin-bottom: 15px; border-radius: 0 0 5px 5px; box-shadow: none;" [expanded]="true" hideToggle>
+            <mat-expansion-panel-header style="pointer-events: none;">
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">business</mat-icon><span style="margin: auto 0 auto 0;">{{full.establishment.name}}&nbsp;:</span><span style="color: #8d9093; margin: auto;">{{'SIRET: ' + full.establishment.siret}}</span><span style="visibility: hidden; margin-right: 5px;">{{full.establishment.name}}&nbsp;:</span><mat-icon style="visibility: hidden;">business</mat-icon>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="margin: 15px 45px;">
+              <app-establishment-form [data]="{mode: 'edit', disabled: disabled, defaultEntity: full.account.entity, defaultData: {establishment: full.establishment}}"
+                                      (establishmentSaved)="updateEstablishment($event)"></app-establishment-form>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;">
+            <mat-expansion-panel-header>
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">account_balance</mat-icon><span style="margin: auto 0 auto 0;">{{full.account.entity.name}}</span><span style="color: #8d9093; margin: auto;">{{(full.account.entity.type ? full.account.entity.type : '') + (full.account.entity.type && full.account.entity.domain ? ' - ' : '') + (full.account.entity.domain ? full.account.entity.domain : '')}}</span><span style="visibility: hidden;">{{full.account.entity.name}}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="margin: 15px 45px;">
+              <app-entity-form [data]="{disabled: true, defaultData: full.account.entity}"></app-entity-form>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngFor="let awr of mainAddresses">
+            <mat-expansion-panel-header>
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">location_on</mat-icon><span style="margin: auto 0 auto 0;">{{getAddressName(awr.address)}}</span><span style="color: #8d9093; margin: auto;">{{awr.role}}</span><span style="visibility: hidden; margin-right: 5px;">{{getAddressName(awr.address)}}</span>
+                <!--app-horizontal-address style="width: 98%;" [address]="awr.address" [comment]="awr.role"></app-horizontal-address-->
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="margin: 15px 45px;">
+              <app-address-form [data]="{mode: 'edit', disabled: disabled, disabledRole: mainAddresses.length === 1, roles: addressRoles, defaultData: awr, types: addressTypes}"
+                                (addressSaved)="updateAddress(awr, $event)" (removeAddress)="removeAddress($event)"></app-address-form>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngFor="let pwr of mainContacts">
+            <mat-expansion-panel-header>
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">person</mat-icon><span style="margin: auto 0 auto 0;">{{getContactName(pwr.people) + '  -  ' + pwr.people.mobilePhone}}</span><span style="color: #8d9093; margin: auto;">{{pwr.role}}</span><span style="visibility: hidden; margin-right: 5px;">{{getContactName(pwr.people) + '  -  ' + pwr.people.mobilePhone}}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="margin: 15px 45px;">
+              <app-contact-form [data]="{mode: 'edit', disabled: disabled, roles: contactRoles, defaultData: pwr}"
+                                (contactSaved)="updateContact(pwr, $event)" (removeContact)="removeContact($event)"></app-contact-form>
+            </div>
+          </mat-expansion-panel>
+        </div>
+      </mat-tab>
+
+      <!-- Adresses -->
+      <mat-tab label="Adresses" [disabled]="isLoading">
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-addresses [full]="full" [update]="updateAddressTab" [disabled]="disabled"
+                                         (updateAddress)="setMainAddress($event); updateState()" (removeAddress)="unsetMainAddress($event);updateState()"></app-establishment-addresses>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Contacts -->
+      <mat-tab label="Contacts" [disabled]="isLoading">
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-contacts [full]="full" [update]="updateContactTab" [disabled]="disabled"
+                                        (updateContact)="setMainContact($event); updateState();" (removeContact)="unsetMainContact($event);updateState()"></app-establishment-contacts>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Tiers -->
+      <mat-tab label="Tiers" [disabled]="isLoading">
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-delegates [full]="full" [update]="updateDelegateTab" [disabled]="disabled" (updateEstablishment)="updateState()"></app-establishment-delegates>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Commandes (margin-left on css) -->
+      <mat-tab [disabled]="isLoading">
+        <ng-template mat-tab-label><mat-icon>assignment_turn_in_outline</mat-icon><span style="padding-left: 5px;">Commandes</span></ng-template>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-orders [full]="full" [disabled]="disabled"></app-establishment-orders>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Marchés -->
+      <mat-tab [disabled]="isLoading">
+        <ng-template mat-tab-label><mat-icon>storefront</mat-icon><span style="padding-left: 5px;">Marchés</span></ng-template>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-markets [full]="full" [disabled]="disabled"></app-establishment-markets>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Biens -->
+      <mat-tab [disabled]="isLoading">
+        <ng-template mat-tab-label><mat-icon>house</mat-icon><span style="padding-left: 5px;">Biens</span></ng-template>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-establishment-estates [full]="full" [disabled]="disabled"></app-establishment-estates>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div style="margin-left: 2%; margin-right: 2%; width: auto; display: flex; min-width: 275px;">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" style="width: 100%;">
+      <mat-tab>
+        <ng-template style="margin: 0 1% 1% 1%" matTabLabel>Compte</ng-template>
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; border-radius: 0 0 5px 5px; box-shadow: none;">
+            <div *ngIf="isLoading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+            <div *ngIf="!isLoading">
+              <mat-list>
+                <mat-list-item>
+                  <mat-icon style="vertical-align: middle;" [ngClass]="getStatusColor()">fiber_manual_record</mat-icon>&nbsp;<span class="grey right-column-text" style="font-weight: bold">{{getStatusName()}}</span>
+                </mat-list-item>
+                <div *ngIf="state.length > 0">
+                  <mat-divider></mat-divider>
+                  <mat-list-item *ngFor="let s of state"><span class="red right-column-text"><mat-icon style="font-size: 10px;width: 16px;vertical-align: -1px;height: auto" class="red">block</mat-icon>{{s}}</span></mat-list-item>
+                </div>
+                <mat-divider></mat-divider>
+                <mat-list-item>
+                  <mat-icon class="grey">account_balance</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text"><a class="link" [routerLink]="['/comptes', full.account.uuid]">{{getName(full.account)}}</a></span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">pie_chart</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{full.account.category}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">bubble_chart</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{full.account.type}}</span>
+                </mat-list-item>
+                <mat-list-item *ngIf="full.account.importance">
+                  <mat-icon class="grey">priority_high</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{full.account.importance}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">person_outline</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{full.account.commercial.first_name + ' ' + full.account.commercial.last_name.toUpperCase()}}</span>
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template style="margin: 0 1% 1% 1%" matTabLabel>Evènements</ng-template>
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; border-radius: 0 0 5px 5px; box-shadow: none;">
+          <app-events [headIcon]="'business'" [dataComment]="dataComment" [disabled]="disabled" [ascending]="ascending" (orderChanged)="orderChanged()" (sendComment)="saveComment($event)"></app-events>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<app-plus-button *ngIf="!disabled" [data]="actionData"></app-plus-button>

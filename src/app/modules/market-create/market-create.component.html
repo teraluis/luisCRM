@@ -1,0 +1,83 @@
+<form [formGroup]="marketForm" (ngSubmit)="save()">
+
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+    <mat-label>Client*</mat-label>
+    <input matInput formControlName="client" [matAutocomplete]="account">
+    <mat-autocomplete #account="matAutocomplete" (optionSelected)="clientSelected($event)">
+      <mat-option *ngFor="let establishment of suggestedEstablishments" [value]="establishment">
+        {{establishment.establishment.name}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <ng-template [ngIf]="establishmentSelected">
+    <mat-divider></mat-divider>
+    <div style="text-align: left;margin-top: 20px">
+      <h3 class="mat-h3" style="font-size: 13px;">Informations du compte sélectionné</h3>
+      <div>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Contact principal*</mat-label>
+          <input matInput formControlName="keyContact" [matAutocomplete]="contact">
+          <mat-autocomplete #contact="matAutocomplete" (optionSelected)="selectContact($event)">
+            <mat-option *ngFor="let people of suggestedPeoples" [value]="people">
+              {{getPeopleName(people)}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Commercial référent*</mat-label>
+          <input matInput formControlName="commercial" [matAutocomplete]="commercial">
+          <mat-autocomplete #commercial="matAutocomplete">
+            <mat-option *ngFor="let user of suggestedUsers" [value]="user">
+              {{user}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Responsable administratif*</mat-label>
+          <input matInput formControlName="administrative" [matAutocomplete]="administrative">
+          <mat-autocomplete #administrative="matAutocomplete">
+            <mat-option *ngFor="let user of suggestedUsers" [value]="user">
+              {{user}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Nom du marché*</mat-label>
+          <input matInput formControlName="name">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Référence du marché*</mat-label>
+          <input matInput formControlName="marketNumber">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Agence*</mat-label>
+          <input matInput formControlName="agency" [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let agency of suggestedAgencies" [value]="agency">
+              {{agency}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+          <mat-label>Type de besoin client*</mat-label>
+          <mat-select formControlName="customerRequirement">
+            <mat-option *ngFor="let customRequirement of customRequirements" [value]="customRequirement">{{customRequirement}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+          <mat-label>Facturation des analyses*</mat-label>
+          <mat-select formControlName="facturationAnalysis">
+            <mat-option class="grey" *ngFor="let type of facturationAnalysis" [value]="type">{{type}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </ng-template>
+  <div class="form-bottom-actions">
+    <div class="form-bottom-actions-right">
+      <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button type="submit" mat-flat-button color="primary" [disabled]="saving || !(this.marketForm.dirty && this.marketForm.valid)">{{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+    </div>
+  </div>
+</form>

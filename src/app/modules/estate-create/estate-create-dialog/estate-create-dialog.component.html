@@ -1,0 +1,4 @@
+<h4 mat-dialog-title>Créer un nouveau bien</h4>
+<div mat-dialog-content class="grey">
+  <app-estate-create [data]="data" (cancel)="close(undefined)" (removeEstate)="close(null)" (estateSaved)="close($event)"></app-estate-create>
+</div>

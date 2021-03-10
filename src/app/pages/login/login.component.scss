@@ -1,0 +1,46 @@
+@import "../../../variables.scss";
+
+.example-card {
+  position: fixed;
+  right: 0;
+  width: 25%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.example-form {
+  width: 100%;
+}
+
+.loginPic {
+  background-image: url('../../../assets/images/login.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #464646;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.loginTitle {
+  margin-top: 5%;
+  text-align: center;
+  color: #575656;
+  width: 100%;
+}
+
+.calypsoLogo {
+  background-image: url('../../../assets/images/calypso.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-width: 100%;
+  min-height: 110%;
+}
+
+.calypsoTitle {
+  font-size: 1.17em;
+  font-weight: bold;
+  line-height: 40px;
+  color: #274561;
+}

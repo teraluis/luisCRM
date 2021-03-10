@@ -1,0 +1,462 @@
+<form *ngIf="form" [formGroup]="form" id="datagrid-form">
+  <div class="mat-elevation-z8">
+    <div class="table-wrapper table-header">
+      <div class="px-3">
+        <ng-container *ngIf="notOnlyResetButton(); else onlyReset">
+          <mat-icon (click)="isOpen = !isOpen" cdkOverlayOrigin #trigger="cdkOverlayOrigin" style="cursor: pointer">
+            filter_alt
+          </mat-icon>
+          <ng-template
+            #popover
+            cdkConnectedOverlay
+            [cdkConnectedOverlayOrigin]="trigger"
+            [cdkConnectedOverlayOpen]="isOpen"
+            [cdkConnectedOverlayHasBackdrop]="true"
+            cdkConnectedOverlayBackdropClass="custom-backdrop"
+            (backdropClick)="closePopover()"
+          >
+            <div id="popover_content">
+              <ng-container [ngTemplateOutlet]="filterResetButton" style="margin-bottom: 24px"></ng-container>
+              <mat-slide-toggle formControlName="deactivate" *ngIf="canBeDeactivate()" class="example-margin">
+                Afficher les éléments désactivés
+              </mat-slide-toggle>
+              <mat-slide-toggle formControlName="bookmark" *ngIf="canBeBookmarked()" class="example-margin">
+                N'afficher que les éléments en favori
+              </mat-slide-toggle>
+            </div>
+          </ng-template>
+        </ng-container>
+        <ng-template #onlyReset>
+          <ng-template [ngTemplateOutlet]="filterResetButton"></ng-template>
+        </ng-template>
+
+        <ng-template #filterResetButton>
+          <button type="button" (click)="resetFilter()" mat-raised-button color="primary">
+            Réinitialiser tous les filtres
+          </button>
+        </ng-template>
+      </div>
+      <div *ngIf="showGlobalAction()" class="mx-auto">
+        <ng-template [ngIf]="globalAction.length > 1" [ngIfElse]="onlyOneGlobalAction">
+          <mat-form-field>
+            <mat-label>Action globale</mat-label>
+            <mat-select [disabled]="isGlobalActionSelectInputDisable()" (selectionChange)="selectAction($event)"
+                        [(value)]="globalActionSelectValue">
+              <mat-option *ngFor="let action of globalAction; let i = index"
+                          [value]="action" [disabled]="isGlobalActionOptionDisable()">
+                {{action.type}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </ng-template>
+
+        <ng-template #onlyOneGlobalAction>
+          <button mat-raised-button color="primary" (click)="selectAction(globalAction[0])">
+            {{getLongLabelOfGlobalAction(globalAction[0].type)}}
+          </button>
+        </ng-template>
+      </div>
+      <!--     Import/Export filters     -->
+      <div *ngIf="canExportAndImportFilter" [ngClass]="{'ml-auto': !showGlobalAction()}">
+        <mat-icon class="clickable px-1" matTooltip="Importer les filtres" (click)="importFilter.click()">
+          get_app
+        </mat-icon>
+        <input #importFilter type="file" hidden (change)="onImportFilterInputChange($event)" accept="application/json">
+        <mat-icon class="clickable px-1" matTooltip="Exporter les filtres" (click)="exportFilter()">
+          publish
+        </mat-icon>
+      </div>
+      <!--  Show/Hide Column      -->
+      <div class="px-3">
+        <mat-icon [matMenuTriggerFor]="configuration" class="clickable">miscellaneous_services</mat-icon>
+        <mat-menu #configuration=matMenu class="mat-elevation-z0">
+          <button *ngFor="let column of columnInfo" mat-menu-item
+                  (click)="changeColumnVisibility($event, column.name)">
+            <mat-icon *ngIf="!hiddenColumn.includes(column.name)" style="color: lawngreen">check</mat-icon>
+            <mat-icon *ngIf="hiddenColumn.includes(column.name)"></mat-icon>
+            {{column.title}}
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort>
+        <!--      Select Line      -->
+        <ng-container matColumnDef="option_start" sticky>
+          <th mat-header-cell *matHeaderCellDef id="option_start">
+            <mat-checkbox (change)="selectAll($event)"></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <mat-checkbox [checked]="allLineSelected || selectedLines.includes(element)"
+                          (change)="selectLine($event, element)"></mat-checkbox>
+          </td>
+        </ng-container>
+        <!--      Data Column      -->
+        <ng-container *ngFor="let header of columnInfo" [matColumnDef]="header.name">
+          <th mat-header-cell *matHeaderCellDef [id]="header.name"
+              [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+            <div style="display: flex; align-items: center">
+              <div [ngSwitch]="header.filterType">
+                <ng-template [ngSwitchCase]="filterType.TEXT">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <input matInput [formControlName]="header.name">
+                    <button mat-button *ngIf="form.controls[header.name].value" matSuffix mat-icon-button
+                            aria-label="Clear"
+                            (click)="form.controls[header.name].reset()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.NUMBER">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <input type="number" matInput [formControlName]="header.name">
+                    <button mat-button *ngIf="form.get(header.name).value" matSuffix mat-icon-button
+                            aria-label="Clear"
+                            (click)="form.get(header.name).reset()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.SELECT">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <mat-select [formControlName]="header.name">
+                      <mat-option *ngFor="let value of header.selectOption" [value]="value">{{value}}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.MULTISELECT">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <mat-select [formControlName]="header.name" multiple>
+                      <mat-option *ngFor="let value of header.selectOption" [value]="value">{{value}}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.BOOKMARK">
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.STATUS">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <mat-select [formControlName]="header.name" multiple>
+                      <mat-option *ngFor="let key of getKeys(header)" [value]="key">
+                        {{header.enumString[key].value}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.DATE">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <input matInput
+                           placeholder="Choose a date"
+                           [satDatepicker]="picker"
+                           [formControlName]="header.name"
+                           (click)="picker.open()"
+                           readonly>
+                    <sat-datepicker #picker [rangeMode]="true"></sat-datepicker>
+                    <sat-datepicker-toggle matSuffix [for]="picker"></sat-datepicker-toggle>
+                  </mat-form-field>
+                </ng-template>
+
+                <ng-template [ngSwitchCase]="filterType.DATETIME">
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <input matInput
+                           placeholder="Choose a date"
+                           [satDatepicker]="picker"
+                           [formControlName]="header.name"
+                           (click)="picker.open()"
+                           readonly>
+                    <sat-datepicker #picker [rangeMode]="true"></sat-datepicker>
+                    <sat-datepicker-toggle matSuffix [for]="picker"></sat-datepicker-toggle>
+                  </mat-form-field>
+                </ng-template>
+
+
+                <ng-container *ngSwitchDefault>
+                  <mat-form-field
+                    [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}">
+                    <mat-label>{{header.title}}</mat-label>
+                    <input matInput [formControlName]="header.name">
+                    <button mat-button *ngIf="form.get(header.name).value" matSuffix mat-icon-button
+                            aria-label="Clear"
+                            (click)="form.get(header.name).reset()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </ng-container>
+              </div>
+              <span class="order-by" mat-sort-header></span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element"
+              (click)="header.clickable && getObjectValueFromPath(header.name, element) ? header.clickable(element) : null"
+              [ngClass]="{'clickable': header.clickable && getObjectValueFromPath(header.name, element)}"
+              [ngStyle]="{'max-width' : header.maxWidthPx ?
+              header.maxWidthPx.toString() + 'px' : '200px'}">
+            <ng-container [ngSwitch]="header.filterType">
+              <ng-template [ngSwitchCase]="filterType.BOOKMARK">
+                <mat-checkbox class="checkbox-favorite"
+                              (click)="$event.stopPropagation()"
+                              (change)="header.clickable ? header.clickable(element) : null"
+                              [checked]="element[header.name]">
+                  <mat-icon style="color: gold;">{{!element[header.name] ? 'star_border' : 'star'}}</mat-icon>
+                </mat-checkbox>
+              </ng-template>
+
+              <ng-template [ngSwitchCase]="filterType.STATUS">
+                <ng-template [ngIf]="getObjectValueFromPath(header.name, element)">
+                  <mat-icon style="line-height: 20px; vertical-align: middle;margin-right:10px;"
+                            [ngClass]="header.enumString[getObjectValueFromPath(header.name, element)].colorClass">
+                    fiber_manual_record
+                  </mat-icon>
+                  {{header.enumString[getObjectValueFromPath(header.name, element)].value}}
+                </ng-template>
+              </ng-template>
+
+              <div *ngSwitchCase="filterType.DATE"
+                   [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}"
+                   [matTooltip]="getObjectValueFromPath(header.name, element) | date: 'dd/MM/yyyy'"
+                   matTooltipClass="max-sized-tooltip">
+                {{getObjectValueFromPath(header.name, element) | date: 'dd/MM/yyyy'}}
+              </div>
+
+              <div *ngSwitchCase="filterType.DATETIME"
+                   [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}"
+                   [matTooltip]="getObjectValueFromPath(header.name, element) | date: 'dd/MM/yyyy HH:mm:ss'"
+                   matTooltipClass="max-sized-tooltip">
+                {{getObjectValueFromPath(header.name, element) | date: 'dd/MM/yyyy HH:mm:ss'}}
+              </div>
+
+              <ng-container *ngSwitchDefault>
+                <a *ngIf="(header.unclick && !header.unclick(element) && header.routerLink) || (!header.unclick && header.routerLink)" [routerLink]="buildRouterLink(header, element)"
+                   [matTooltip]="getObjectValueFromPath(header.name, element)" matTooltipClass="max-sized-tooltip"
+                   [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}" class="link-datagrid">
+                  <mat-icon style="color: #BDBDBD;">chevron_right</mat-icon>
+                  <span class="aligned-with-icon">{{getObjectValueFromPath(header.name, element)}}</span>
+                </a>
+                <ng-container *ngIf="!header.routerLink">
+                  <mat-icon *ngIf="header.clickable && getObjectValueFromPath(header.name, element)"
+                            style="color: #BDBDBD;">chevron_right
+                  </mat-icon>
+                  <div [ngClass]="{'aligned-with-icon': header.clickable}"
+                       [ngStyle]="{'max-width' : header.maxWidthPx ? header.maxWidthPx.toString() + 'px' : '200px'}"
+                       [matTooltip]="getObjectValueFromPath(header.name, element)" matTooltipClass="max-sized-tooltip">
+                    {{getObjectValueFromPath(header.name, element)}}
+                  </div>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+          </td>
+        </ng-container>
+        <!--      Action Column      -->
+        <ng-container matColumnDef="action_end" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef id="action_end"></th>
+          <td mat-cell *matCellDef="let element">
+            <div style="display: flex">
+
+              <ng-container
+                *ngIf="hasAction(actionType.PREVIEW) && !hasTooManyActionAndNotForced(actionType.PREVIEW)">
+                <ng-template [ngTemplateOutlet]="preview"
+                             [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container
+                *ngIf="hasAction(actionType.DUPLICATE) && !hasTooManyActionAndNotForced(actionType.DUPLICATE)">
+                <ng-template [ngTemplateOutlet]="duplicate"
+                             [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container *ngIf="hasAction(actionType.DELETE) && !hasTooManyActionAndNotForced(actionType.DELETE)">
+                <ng-template [ngTemplateOutlet]="delete" [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container *ngIf="hasAction(actionType.EDIT) && !hasTooManyActionAndNotForced(actionType.EDIT)">
+                <ng-template [ngTemplateOutlet]="edit" [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container
+                *ngIf="hasAction(actionType.ACTIVATE) && !hasTooManyActionAndNotForced(actionType.ACTIVATE)">
+                <ng-template [ngTemplateOutlet]="activate"
+                             [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container
+                *ngIf="hasAction(actionType.DEACTIVATE) && !hasTooManyActionAndNotForced(actionType.DEACTIVATE)">
+                <ng-template [ngTemplateOutlet]="deactivate"
+                             [ngTemplateOutletContext]="{element: element}"></ng-template>
+              </ng-container>
+
+              <ng-container
+                *ngIf="hasAction(actionType.CUSTOM)">
+                <ng-container *ngFor="let action of getAllCustomAction()">
+                  <span *ngIf="!hasTooManyActionAndNotForcedCustom(action.id) && isVisibleCustom(action.id, element)">
+                    <ng-template [ngTemplateOutlet]="custom"
+                                 [ngTemplateOutletContext]="getContext(action, element)"></ng-template>
+                  </span>
+                </ng-container>
+              </ng-container>
+
+              <ng-template [ngIf]="hasTooManyActionAndSomeNotForced()">
+                <mat-icon [matMenuTriggerFor]="menu" class="clickable">drag_indicator</mat-icon>
+                <mat-menu #menu=matMenu class="mat-elevation-z0">
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.PREVIEW) && hasTooManyActionAndNotForced(actionType.PREVIEW)"
+                          (click)="executeAction(actionType.PREVIEW, element)"
+                          [disabled]="isDisabled(actionType.PREVIEW, element)">
+                    <ng-template [ngTemplateOutlet]="preview"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Aperçu
+                  </button>
+
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.DUPLICATE) && hasTooManyActionAndNotForced(actionType.DUPLICATE)"
+                          (click)="executeAction(actionType.DUPLICATE, element)"
+                          [disabled]="isDisabled(actionType.DUPLICATE, element)">
+                    <ng-template [ngTemplateOutlet]="duplicate"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Dupliquer
+                  </button>
+
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.DELETE) && hasTooManyActionAndNotForced(actionType.DELETE)"
+                          (click)="executeAction(actionType.DELETE, element)"
+                          [disabled]="isDisabled(actionType.DELETE, element)">
+                    <ng-template [ngTemplateOutlet]="delete"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Supprimer
+                  </button>
+
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.EDIT) && hasTooManyActionAndNotForced(actionType.EDIT)"
+                          (click)="executeAction(actionType.EDIT, element)"
+                          [disabled]="isDisabled(actionType.EDIT, element)">
+                    <ng-template [ngTemplateOutlet]="edit"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Modifier
+                  </button>
+
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.ACTIVATE) && hasTooManyActionAndNotForced(actionType.ACTIVATE)"
+                          (click)="executeAction(actionType.ACTIVATE, element)"
+                          [disabled]="isDisabled(actionType.ACTIVATE, element)">
+                    <ng-template [ngTemplateOutlet]="activate"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Activer
+                  </button>
+
+                  <button mat-menu-item
+                          *ngIf="hasAction(actionType.DEACTIVATE) && hasTooManyActionAndNotForced(actionType.DEACTIVATE)"
+                          (click)="executeAction(actionType.DEACTIVATE, element)"
+                          [disabled]="isDisabled(actionType.DEACTIVATE, element)">
+                    <ng-template [ngTemplateOutlet]="deactivate"
+                                 [ngTemplateOutletContext]="{element: element}"></ng-template>
+                    Désactiver
+                  </button>
+
+                  <ng-container *ngFor="let action of getAllCustomAction()">
+                    <button mat-menu-item
+                            *ngIf="hasAction(actionType.CUSTOM) && hasTooManyActionAndNotForcedCustom(action.id) && isVisibleCustom(action.id, element)"
+                            [disabled]="isDisabledCustom(action.id, element)"
+                            (click)="executeCustomAction(action.id, element)">
+                      <ng-template [ngIf]="action.icon"
+                                   [ngTemplateOutlet]="custom"
+                                   [ngTemplateOutletContext]="getContext(action, element)"></ng-template>
+                      {{action.label}}
+                    </button>
+                  </ng-container>
+                </mat-menu>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="getDisplayedColumn()"></tr>
+        <tr mat-row *matRowDef="let row; columns: getDisplayedColumn();" [hidden]="isLoading"></tr>
+      </table>
+      <div *ngIf="isLoading" class="spinner-container">
+        <mat-progress-spinner
+          color="primary"
+          mode="indeterminate">
+        </mat-progress-spinner>
+      </div>
+    </div>
+    <mat-paginator [length]="total" [pageSize]="10"
+                   [pageSizeOptions]="[10, 25, 50, 250, 500]" showFirstLastButtons
+                   class="table-wrapper"></mat-paginator>
+  </div>
+</form>
+
+<!--      Template action      -->
+
+<ng-template #preview let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.PREVIEW, element), 'disable': isDisabled(actionType.PREVIEW, element)}"
+    (click)="executeAction(actionType.PREVIEW, element)">
+    visibility
+  </mat-icon>
+</ng-template>
+
+<ng-template #duplicate let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.DUPLICATE, element), 'disable': isDisabled(actionType.DUPLICATE, element)}"
+    (click)="executeAction(actionType.DUPLICATE, element)">
+    content_copy
+  </mat-icon>
+</ng-template>
+
+<ng-template #delete let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.DELETE, element), 'disable': isDisabled(actionType.DELETE, element)}"
+    (click)="executeAction(actionType.DELETE, element)">
+    clear
+  </mat-icon>
+</ng-template>
+
+<ng-template #edit let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.EDIT, element), 'disable': isDisabled(actionType.EDIT, element)}"
+    (click)="executeAction(actionType.EDIT, element)">
+    edit
+  </mat-icon>
+</ng-template>
+
+<ng-template #activate let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.ACTIVATE, element), 'disable': isDisabled(actionType.ACTIVATE, element)}"
+    (click)="executeAction(actionType.ACTIVATE, element)">
+    power
+  </mat-icon>
+</ng-template>
+
+<ng-template #deactivate let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabled(actionType.DEACTIVATE, element), 'disable': isDisabled(actionType.DEACTIVATE, element)}"
+    (click)="executeAction(actionType.DEACTIVATE, element)">
+    power_off
+  </mat-icon>
+</ng-template>
+
+<ng-template #custom let-action='action' let-element='element'>
+  <mat-icon
+    [ngClass]="{'clickable': !isDisabledCustom(action.id, element), 'disable': isDisabledCustom(action.id, element)}"
+    (click)="executeCustomAction(action.id, element)">
+    {{action.icon}}
+  </mat-icon>
+</ng-template>

@@ -1,0 +1,6 @@
+<mat-card class="form-card mat-elevation-z0" style="border-radius: 0 0 5px 5px;">
+  <app-table-search-list [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                         [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading" (clickEvent)="clickEvent($event)"
+                         (pageData)="setPageData($event)" (filterData)="setFilterData($event)" [router]="getRouterLink"
+                         [comboList]="getComboList"></app-table-search-list>
+</mat-card>

@@ -1,0 +1,246 @@
+<mat-progress-bar *ngIf="isLoading" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="breadcrumb" *ngIf="isLoading">Chargement...</div>
+  <div class="breadcrumb" *ngIf="!isLoading">
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/market']">Liste des marchés</a></span>&nbsp;/&nbsp;&nbsp;
+    <span style="font-weight: bold;margin-right: 5px">Marché {{market.name}}</span>
+    <button style="border-style: none;cursor: pointer" class="copyButton" (click)="copyMessage(market.name)"></button>
+  </div>
+</div>
+
+<div style="display: flex;" id="window">
+  <div style="margin-left: 2%; display: flex; width: 100%;">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" style="width: 100%;">
+      <mat-tab label="Marché">
+        <ng-template matTabContent>
+          <form *ngIf="marketForm" [formGroup]="marketForm" (ngSubmit)="save()">
+            <div *ngIf="isLoading">
+              <mat-expansion-panel style="margin-bottom: 15px; border-radius: 0 0 5px 5px; pointer-events: none; box-shadow: none;" [expanded]="false" hideToggle>
+                <mat-expansion-panel-header>
+                  <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                    <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+              </mat-expansion-panel>
+            </div>
+            <div *ngIf="!isLoading">
+              <mat-expansion-panel style="margin-bottom: 15px; border-radius: 0 0 5px 5px; box-shadow: none;" [expanded]="true" hideToggle>
+                <mat-expansion-panel-header style="pointer-events: none;">
+                  <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                    <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">storefront</mat-icon><span style="margin: auto 0 auto 0;">Marché :</span><span style="color: #8d9093; margin: auto;">{{market.name + ' - ' + market.marketNumber}}</span><span style="visibility: hidden; margin-right: 5px;">Marché :</span>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div style="margin: 15px 45px;">
+                  <div class="two-column-grid">
+                    <div class="column">
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Nom du marché</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="name">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Référence du marché</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="marketNumber">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Agence</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="agency" [matAutocomplete]="auto">
+                        <mat-autocomplete #auto="matAutocomplete">
+                          <mat-option *ngFor="let agency of suggestedAgencies" [value]="agency">
+                            {{agency}}
+                          </mat-option>
+                        </mat-autocomplete>
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Type de besoin client</mat-label>
+                        <mat-select style="font-size: 12px;" formControlName="customerRequirement">
+                          <mat-option *ngFor="let customRequirement of customRequirements" [value]="customRequirement">
+                            {{customRequirement}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+                        <mat-label>Facturation des analyses</mat-label>
+                        <mat-select formControlName="facturationAnalysis">
+                          <mat-option class="grey" *ngFor="let type of facturationAnalysis" [value]="type">{{type}}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>N° de parution</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="publicationNumber">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Estimation de volume</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="estimateVolume">
+                      </mat-form-field>
+                    </div>
+                    <div class="column">
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Modalité de délais</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="deadlineModality">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Condition d'intervention</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="interventionCondition">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Présentation spécifique des rapports</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="specificReportDisplay">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Lien ordre de mission/facturation</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="missionOrderBillingLink">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Point de vigilance</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="warningPoint">
+                      </mat-form-field>
+
+                    </div>
+                  </div>
+                  <div class="bottom-right">
+                    <button type="button" mat-raised-button style="margin-right: 10px" [disabled]="!this.marketForm.dirty" (click)="initForm()">Annuler</button>
+                    <button mat-raised-button color="primary" [disabled]="!(this.marketForm.dirty && this.marketForm.valid)">Enregistrer</button>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+              <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;">
+                <mat-expansion-panel-header>
+                  <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+                    <mat-icon class="material-icons-outlined" style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">info</mat-icon><span style="margin: auto 0 auto 0;">Informations complémentaires:</span>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div style="margin: 15px 45px;">
+                  <div class="two-column-grid">
+                    <div class="column">
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Date de réception</mat-label>
+                        <input type="date" style="font-size: 12px;" matInput formControlName="receiveDate">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Date de réponse</mat-label>
+                        <input type="date" style="font-size: 12px;" matInput formControlName="responseDate">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Date de retour</mat-label>
+                        <input type="date" style="font-size: 12px;" matInput formControlName="returnDate">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Date de début</mat-label>
+                        <input type="date" style="font-size: 12px;" matInput formControlName="startDate">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Durée (jour(s))</mat-label>
+                        <input type="number" style="font-size: 12px;" matInput formControlName="duration">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Provenance</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="origin">
+                      </mat-form-field>
+                    </div>
+                    <div class="column">
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Type d'ordre de mission</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="missionOrderType">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Modalité de relance</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="dunningModality">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Nommage spécifique des rapports</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="specificReportNaming">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Spécificité de facturation</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="specificBilling">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Fréquence de facturation</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="billingFrequency">
+                      </mat-form-field>
+                      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+                        <mat-label>Description</mat-label>
+                        <input style="font-size: 12px;" matInput formControlName="description">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="bottom-right">
+                    <button type="button" mat-raised-button style="margin-right: 10px" [disabled]="!this.marketForm.dirty" (click)="initForm()">Annuler</button>
+                    <button mat-raised-button color="primary" [disabled]="!(this.marketForm.dirty && this.marketForm.valid)">Enregistrer</button>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </form>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Contact externe">
+        <ng-template matTabContent>
+          <app-market-contacts [update]="updateContacts" [market]="market" [disabled]="disabled"></app-market-contacts>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Établissements">
+        <ng-template matTabContent>
+          <app-market-establishments [update]="updateAccounts" [market]="market" [disabled]="disabled"></app-market-establishments>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Contact interne">
+        <ng-template matTabContent>
+          <app-market-users [update]="updateUsers" [market]="market" [disabled]="disabled"></app-market-users>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Documents">
+        <ng-template matTabContent>
+          <app-file-upload [attachments]="attachments" [fileTypes]="attachmentTypes" [disabled]="disabled" [updateList]="updateAttachmentList"
+                           (upload)="uploadAttachment($event)" (download)="downloadAttachment($event)" (remove)="removeAttachment($event)"></app-file-upload>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div style="margin-left: 2%; margin-right: 2%; width: auto; display: flex; min-width: 275px;">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" style="width: 100%;">
+      <mat-tab label="Récapitulatif">
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; border-radius: 0 0 5px 5px; box-shadow: none;">
+            <div *ngIf="isLoading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+            <mat-list *ngIf="!isLoading">
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="Nom du marché">storefront</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{market.name}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="N° du marché">library_books</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{market.marketNumber}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="Contact principal">person</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{getKeyContact()}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="Nombre de compte client">account_box</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{getClientAccountTotal()}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="Date de départ">play_arrow</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{market.startDate | date: 'dd/MM/yyyy'}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <mat-icon class="grey" matTooltip="Durée">timelapse</mat-icon>&nbsp;&nbsp;<span
+                class="grey right-column-text">{{market.duration}} jour{{market.duration > 1 ? 's' : ''}}</span>
+              </mat-list-item>
+            </mat-list>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Evénements">
+        <ng-template matTabContent>
+          <app-events [dataComment]="dataComment" [ascending]="ascending" [disabled]="disabled" (orderChanged)="orderChanged()" (sendComment)="saveComment($event)" ></app-events>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<app-plus-button *ngIf="!disabled" [data]="actionData"></app-plus-button>

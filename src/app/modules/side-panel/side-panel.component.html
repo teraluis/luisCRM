@@ -1,0 +1,37 @@
+<!--<mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>-->
+
+<mat-sidenav-container autosize [hasBackdrop]="true" (backdropClick)="sidePanelService.close()">
+  <mat-sidenav #sidePanel id="sidePanel" class="side-panel" [autoFocus]="sidePanel" [fixedInViewport]="true" [fixedTopGap]="250" [fixedBottomGap]="0"
+               position="end" mode="over" (focusout)="sidePanelService.close()">
+    <mat-toolbar class="toggleBar">
+      <div (click)="sidePanelService.toggle(0, null)">
+        <span class="info-title">{{sidePanelService.title}}</span>
+      </div>
+    </mat-toolbar>
+    <div #sidePanelElement class="grid-content">
+      <div *ngFor="let element of sidePanelService.content">
+        <div style="width: 100%" *ngIf="element.dividerTitle">
+          <div class="info-content" style="text-align: center; color: #575656">{{element.dividerTitle}}</div>
+          <mat-divider style="width: 80%; margin-left: 10%;"></mat-divider>
+          <div style="height: 30px"></div>
+        </div>
+        <div *ngIf="element.isLoading">
+          <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+        </div>
+        <div [hidden]="element.isLoading">
+          <div *ngIf="element.infos.length > 0">
+            <div *ngFor="let info of element.infos">
+              <div class="info-content" style="color: #22a8c2;">{{info.label}}&nbsp;:</div>
+              <div class="info-content" style="color: #575656;">{{info.value}}</div>
+              <div style="height: 20px"></div>
+            </div>
+          </div>
+          <div *ngIf="element.infos.length === 0">
+            <div class="info-content" style="color: #575656; font-style: italic;">Non renseigné</div>
+            <div style="height: 20px"></div>
+          </div>
+          </div>
+      </div>
+    </div>
+  </mat-sidenav>
+</mat-sidenav-container>

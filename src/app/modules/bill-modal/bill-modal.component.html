@@ -1,0 +1,5 @@
+<div style="display:block;color: red;cursor: pointer;margin-left: auto;margin-bottom: 20px;font-family: Lato" (click)="quitModal(false)">
+  <mat-icon style="vertical-align: -6.5px">clear</mat-icon>Fermer
+</div>
+<app-bill mat-dialog-content [disabled]="!userRights.orderManagement" [data]="data" [asModal]="true"
+          (updatedBill)="closeModal($event)" (quitModal)="quitModal($event)"></app-bill>

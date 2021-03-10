@@ -1,0 +1,19 @@
+@import "../../../variables.scss";
+
+.mat-h1 {
+  color: $primary;
+}
+
+button + button {
+  margin: 15px;
+}
+
+.mat-form-field-wrapper {
+  padding: 1px;
+}
+
+.grey-select {
+  ::ng-deep .mat-select-value-text {
+    color: #575656;
+  }
+}

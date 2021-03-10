@@ -1,0 +1,87 @@
+<mat-progress-bar *ngIf="workInProgress" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="breadcrumb" *ngIf="loading">Chargement...</div>
+  <div class="breadcrumb" *ngIf="!loading">
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/estates']">Liste des biens</a></span>&nbsp;/&nbsp;&nbsp;
+    <span style="font-weight: bold;margin-right: 5px">Bien {{estate.estateReference ? estate.estateReference : estate.adxReference}}</span>
+    <button style="border-style: none;cursor: pointer" class="copyButton" (click)="copyMessage(estate.estateReference ? estate.estateReference : estate.adxReference)"></button>
+  </div>
+</div>
+
+<div class="grid-container background" id="window">
+  <div class="main-content">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" class="estate-tab-group">
+
+      <!-- Bien -->
+      <mat-tab label="Bien">
+        <mat-card style="margin-bottom: 15px; border-radius: 0 0 5px 5px; box-shadow: none;" *ngIf="loading">
+          <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+        </mat-card>
+        <mat-card style="margin-bottom: 15px; border-radius: 0 0 5px 5px; box-shadow: none;" *ngIf="!loading">
+          <app-estate-edit [data]="{estate: estate, disabled: false, orderMode: false}"></app-estate-edit>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Commandes (margin-left on css) -->
+      <mat-tab [disabled]="loading">
+        <ng-template mat-tab-label><mat-icon>assignment_turn_in_outline</mat-icon><span style="padding-left: 5px;">Commandes</span></ng-template>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!loading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-estate-orders [estate]="estate"></app-estate-orders>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- Interventions -->
+      <mat-tab [disabled]="loading">
+        <ng-template mat-tab-label><mat-icon>description_outline</mat-icon><span style="padding-left: 5px;">Interventions</span></ng-template>
+        <mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px;" *ngIf="!loading">
+          <mat-card-content style="padding: 10px 10px 40px 10px">
+            <app-estate-interventions [estateId]="estate.id"></app-estate-interventions>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="right-column">
+    <mat-tab-group animationDuration="0ms" disableRipple="true">
+      <mat-tab label="Récapitulatif">
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; border-radius: 0 0 5px 5px; box-shadow: none;">
+            <div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+            <div *ngIf="!loading">
+              <mat-list>
+                <mat-list-item>
+                  <mat-icon style="vertical-align: middle;" [ngClass]="getStatusColor(estate)">fiber_manual_record</mat-icon>
+                  &nbsp;&nbsp;<span class="grey right-column-text" style="font-weight: bold">{{getStatusName(estate)}}</span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item>
+                  <mat-icon class="grey">{{!estate.establishment ? 'account_circle' : 'business'}}</mat-icon>
+                  &nbsp;&nbsp;<span class="grey right-column-text">{{accountName}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">gps_fixed</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{getAddressName(estate)}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">apartment</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">Bâtiments: {{estate.localities.length}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">house</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">Locaux: {{nbPremises}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">house_siding</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">Annexes: {{nbAnnexes}}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <mat-icon class="grey">location_on</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">Adresses: {{nbAddresses}}</span>
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

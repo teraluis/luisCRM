@@ -1,0 +1,61 @@
+
+<mat-progress-bar mode="indeterminate" *ngIf="saving || loading || marketLoading"></mat-progress-bar>
+
+<h4 style="font-size: 14px;" mat-dialog-title class="mat-h1">Créer une nouvelle commande</h4>
+
+<form [formGroup]="orderForm">
+  <div mat-dialog-content>
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+      <mat-label>Rechercher un établissement</mat-label>
+      <input matInput style="font-size: 12px; margin-left: 30px;" type="text" [matAutocomplete]="auto" placeholder="ex: La Caennaise" (input)="suggestEstablishment()" formControlName="establishment">
+      <mat-icon style="margin-right: -24px;" matPrefix>search</mat-icon>
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option class="form-option grey" *ngFor="let c of possibleEstablishments" [value]="c.establishment.name" (onSelectionChange)="selectEstablishment(c)" [disabled]="c.account.state !== '0' && !c.hasOrders">
+          <span>{{c.establishment.name}}</span>&nbsp;&nbsp;<span style="color: #BDBDBD; font-style: italic;" *ngIf="c.account.state !== '0' && !c.hasOrders">(Incomplet)</span>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <div *ngIf="selectedEstablishment">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+        <mat-label>Adresse *</mat-label>
+        <input style="font-size: 12px;" formControlName="address" matInput>
+      </mat-form-field>
+      <mat-divider style="margin-top: 10px;"></mat-divider>
+      <div style="text-align: left; margin-top: 10px; width: 98%; margin-left: 1%;">
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+          <mat-label>Marché *</mat-label>
+          <mat-select class="grey-select" style="font-size: 12px;" (ngModelChange)="onMarketSelected()" formControlName="market">
+            <mat-option class="form-option grey" [value]="'nomarketvalue'">Commande hors marché</mat-option>
+            <mat-option class="form-option grey" *ngFor="let market of suggestedMarkets" [value]="market">{{market.name}} - {{market.marketNumber}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+          <mat-label>Commercial *</mat-label>
+          <input matInput style="font-size: 12px;" [matAutocomplete]="auto" (input)="suggestCommercial()" formControlName="commercial">
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option class="form-option grey" *ngFor="let commercial of suggestedCommercials" [value]="commercial">
+              {{commercial}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <mat-divider style="margin-top: 10px;"></mat-divider>
+      <div style="text-align: left; margin-top: 10px; width: 98%; margin-left: 1%;">
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+          <mat-label>Donneur d'ordre - Contact *</mat-label>
+          <mat-select style="font-size: 12px;" formControlName="purchaserContact">
+            <mat-option class="form-option grey" *ngFor="let contact of suggestedContacts" [value]="contact.people">
+              {{getContactName(contact)}} - {{contact.origin}}</mat-option>
+            <mat-option style="color: #BDBDBD; font-style: italic;" *ngIf="suggestedContacts.length === 0" disabled>Aucun contact</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+  <div mat-dialog-actions class="form-bottom-actions">
+    <div class="form-bottom-actions-right grey">
+      <button mat-button [disabled]="saving" mat-dialog-close>Fermer</button>
+      <button mat-flat-button color="primary" [disabled]="saving|| !(this.orderForm.dirty && this.orderForm.valid)" (click)="save()">Créer la commande</button>
+    </div>
+  </div>
+</form>

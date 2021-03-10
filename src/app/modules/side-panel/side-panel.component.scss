@@ -1,0 +1,35 @@
+.side-panel {
+  background-color: #ffffff;
+  width: 23vw;
+  border: 1px solid #fafafa;
+  border-top: 1px solid #e8e8e8;
+  box-shadow: -5px 7px 12px rgba(0, 0, 0, 0.1);
+  right: 0;
+  z-index: 999;
+  display: flex;
+  top: 64px !important;
+}
+
+.info-content {
+  font-family: Lato;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  font-size: 1rem;
+  margin-left: 10px;
+}
+
+.grid-content {
+  display: inline-block;
+  margin-top: 10%;
+  width: 100%;
+}
+
+.info-title {
+  font-family: Lato;
+  color: #575656;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  font-size: 1.2rem;
+}

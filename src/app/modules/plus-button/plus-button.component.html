@@ -1,0 +1,21 @@
+<div class="fixed-div" *ngIf="action === false">
+  <button mat-fab color="primary" class="big-fixed-button" (click)="action = true">
+    <mat-icon inline=true style="font-size: 30px">reorder</mat-icon>
+  </button>
+</div>
+<div class="full-background" *ngIf="action === true" (click)="action = false">
+  <div class="fixed-div">
+    <ng-container *ngFor="let d of _data">
+      <div style="margin-bottom: 7px;margin-right: 10px" [style.cursor]="d.disabledFn() ? 'default' : 'pointer'"
+           (click)="!d.disabledFn() ? d.function() : $event.stopPropagation()" *ngIf="!d.hidden">
+        <span style="font-family: Lato;margin-right: 5px">{{titleCaseWord(d.label)}}</span>
+        <button mat-mini-fab color="primary" class="fixed-button" [disabled]="d.disabledFn()">
+          <mat-icon inline=true style="font-size: 18px">{{d.icon ? d.icon : 'add'}}</mat-icon>
+        </button>
+      </div>
+    </ng-container>
+    <button mat-fab color="secondary" class="big-fixed-button" (click)="action = false">
+      <mat-icon inline=true style="font-size: 40px">clear</mat-icon>
+    </button>
+  </div>
+</div>

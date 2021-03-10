@@ -1,0 +1,170 @@
+<mat-progress-bar *ngIf="workInProgress" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="breadcrumb" *ngIf="loading">Chargement...</div>
+  <div class="breadcrumb" *ngIf="!loading">
+    <span style="margin-right: 10px"><a class="link" [routerLink]="['/interventions']">Liste des interventions</a></span>&nbsp;/&nbsp;&nbsp;
+    <span *ngIf="market" style="margin: auto 10px"><span style="margin-right: 10px"><a class="link" [routerLink]="['/market', market.uuid]">Marché {{market.name}}</a></span>&nbsp;&nbsp;/&nbsp;&nbsp;</span>
+    <span style="margin: 0 10px"><a class="link" [routerLink]="['/orders', order.uuid]">Commande {{order.name}}</a></span>&nbsp;&nbsp;/&nbsp;&nbsp;
+    <span style="font-weight: bold;margin-right: 5px">Intervention {{intervention.asDraft().name}}</span>
+    <button style="border-style: none;cursor: pointer" class="copyButton" (click)="copyMessage(intervention.asDraft().name)"></button>
+  </div>
+</div>
+
+<div class="grid-container background" id="window">
+
+  <!-- Top tabs and selected tab  -->
+  <div class="main-content">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" [(selectedIndex)]="index" (selectedTabChange)="initActionButton()">
+
+<!--      ACCES & CONTACTS  -->
+      <mat-tab label="Accès & Contacts" [disabled]="lockService.lockState">
+          <mat-card *ngIf="loading" class="form-card" style="box-shadow: none; border-radius: 0 0 5px 5px;">
+            <mat-card-content style="padding: 10px 40px">
+              <div style="width: fit-content;margin: auto">
+                <mat-spinner [diameter]="30"></mat-spinner>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <span *ngIf="intervention && intervention.isDraft" style="color: orange;">
+            <mat-icon style="vertical-align: middle">warning</mat-icon>
+            Aucune prestation affectée à l'intervention : impossible de programmer une intervention
+          </span>
+          <app-intervention-description *ngIf="!loading" [data]="{estate: estate, intervention: draftIntervention, contacts: interventionPeople, workDescription: workDescription, reportDestinations: order.reportDestinations}"
+                                        (interventionChanges)="refreshIntervention($event);getAllComments()" [disabled]="disabled"></app-intervention-description>
+      </mat-tab>
+
+<!--      BIEN  -->
+      <mat-tab label="Bien" [disabled]="lockService.lockState">
+          <mat-card class="form-card" style="width: 60vw; box-shadow: none; border-radius: 0 0 5px 5px;">
+            <mat-card-content style="padding: 10px">
+              <div style="width: fit-content;margin: auto" *ngIf="loading">
+                <mat-spinner [diameter]="30"></mat-spinner>
+              </div>
+              <app-intervention-estate *ngIf="!loading" [order]="order" [interventionId]="intervention.id" [disabled]="disabled"></app-intervention-estate>
+            </mat-card-content>
+          </mat-card>
+      </mat-tab>
+
+<!--      PLANIFICATION  -->
+      <mat-tab label="Planification" [disabled]="lockService.lockState || interventionStatus < SETTLED_STATUS || disabled">
+        <ng-template matTabContent>
+
+<!--          planification OptiTime -->
+          <mat-card class="form-card" style="box-shadow: none; border-radius: 0 0 5px 5px;">
+            <mat-card-content style="padding: 10px 40px 30px 40px">
+              <div *ngIf="loading" style="width: fit-content;margin: auto">
+                <mat-spinner [diameter]="30"></mat-spinner>
+              </div>
+              <span *ngIf="intervention && intervention.isDraft" style="color: orange;"> <mat-icon
+                style="vertical-align: middle">warning</mat-icon> Aucune prestation affectée à l'intervention : impossible de programmer une intervention</span>
+              <app-intervention-planning *ngIf="!loading" [intervention]="intervention" [order]="order" [disabled]="disabled"
+                                         (interventionChanges)="refreshIntervention($event);getAllComments()"></app-intervention-planning>
+            </mat-card-content>
+          </mat-card>
+
+<!--          planification manuelle -->
+          <mat-expansion-panel *ngIf="canSchedule()"
+                               style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;"
+                               [(expanded)]="isManualScheduleExpanded"
+                               (opened)="expandManualScheduling()"
+                               (closed)="reduceManualScheduling()"
+                               [disabled]="disabled">
+            <mat-expansion-panel-header style="padding: 0 16px">
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px; padding-left: 40px">
+                <h2 style="font-size: 21px">Planification manuelle</h2>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="margin: 15px 45px;">
+              <app-intervention-schedule [materializedIntervention]="intervention" [order]="order" (saveResultObs)="shouldReload($event)"></app-intervention-schedule>
+            </div>
+          </mat-expansion-panel>
+
+        </ng-template>
+      </mat-tab>
+
+<!--      RAPPORT -->
+      <mat-tab label="Rapport" [disabled]="lockService.lockState || interventionStatus < INCOMPLETE_STATUS || disabled">
+        <ng-template matTabContent>
+          <mat-card class="form-card" style="box-shadow: none; border-radius: 0 0 5px 5px;">
+            <mat-card-content style="padding: 10px 40px">
+              <div *ngIf="loading" style="width: fit-content;margin: auto">
+                <mat-spinner [diameter]="30"></mat-spinner>
+              </div>
+              <span *ngIf="intervention && intervention.isDraft" style="color: orange;"> <mat-icon style="vertical-align: middle">warning</mat-icon> Aucune prestation affectée à l'intervention : impossible de programmer une intervention</span>
+              <app-intervention-reportresults *ngIf="!loading"
+                                              [intervention]="intervention.isIncomplete ? intervention.asIncomplete() : intervention.asDone()"
+                                              [disabled]="disabled"
+                                              [order]="order"
+                                              [estate]="estate"
+                                              [address]="firstAddress"
+                                              (saveResultObs)="shouldReload($event)"
+                                              (getActionButton)="addAction($event)"></app-intervention-reportresults>
+            </mat-card-content>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Documents">
+        <ng-template matTabContent>
+          <app-file-upload [fileTypes]="attachmentTypes" [attachments]="attachments" [disabled]="disabled" [updateList]="updateAttachmentList"
+                           (upload)="uploadAttachment($event)" (download)="downloadAttachment($event)" (remove)="removeAttachment($event)"></app-file-upload>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+
+  </div>
+
+  <!-- Right menu -->
+  <div class="right-column">
+    <mat-tab-group animationDuration="0ms" disableRipple="true" *ngIf="!loading">
+      <mat-tab label="Récapitulatif">
+        <ng-template matTabContent>
+          <mat-card style="padding: 0 0 10px; box-shadow: none; border-radius: 0 0 5px 5px;">
+            <div *ngIf="loading" style="width: fit-content;margin: auto">
+              <mat-spinner [diameter]="30"></mat-spinner>
+            </div>
+            <mat-list *ngIf="!loading">
+              <mat-list-item>
+                <mat-icon [ngClass]="getStatusColor(intervention.status)" style="vertical-align: middle;">fiber_manual_record</mat-icon>&nbsp;<span class="grey right-column-text" style="font-weight: bold">{{getStatusName(intervention.status)}}</span>
+              </mat-list-item>
+              <mat-divider></mat-divider>
+
+              <!-- Market -->
+              <mat-list-item *ngIf="market">
+                <ng-container>
+                  <mat-icon class="grey">pie_chart</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{market.name}} - {{market.marketNumber}}</span>
+                </ng-container>
+              </mat-list-item>
+
+              <!-- Order -->
+              <mat-list-item>
+                <ng-container *ngIf="order">
+                  <mat-icon class="grey">shop</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text">{{order.name}}</span></ng-container>
+              </mat-list-item>
+
+              <!-- Estate -->
+              <mat-list-item>
+                <ng-container *ngIf="estate">
+                  <mat-icon class="grey">house</mat-icon>&nbsp;&nbsp;<span class="grey right-column-text"><span>{{getFullAddress(firstAddress)}}</span></span>
+                </ng-container>
+              </mat-list-item>
+
+              <!-- Prestations -->
+              <mat-list-item>
+                <ng-container *ngIf="prestationLabels">
+                  <mat-icon class="grey">list_alt</mat-icon>&nbsp;&nbsp;<span *ngFor="let prestationLabel of prestationLabels" class="chip">{{prestationLabel}}</span></ng-container>
+              </mat-list-item>
+            </mat-list>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Evénements" *ngIf="!loading">
+        <ng-template matTabContent>
+          <app-events [dataComment]="dataComments" [ascending]="ascending" [disabled]="disabled" (orderChanged)="orderChanged()" (sendComment)="saveComment($event)"></app-events>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<app-plus-button *ngIf="!disabled" [data]="actionData"></app-plus-button>

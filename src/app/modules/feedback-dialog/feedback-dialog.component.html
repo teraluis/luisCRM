@@ -1,0 +1,16 @@
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Commentaire</mat-label>
+  <textarea matInput [(ngModel)]="comment" matTextareaAutosize matAutosizeMinRows=10 matAutosizeMaxRows=10></textarea>
+</mat-form-field>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Joindre un fichier</mat-label>
+  <input matInput [(ngModel)]="fileName" (click)="fileInput.click()" (keydown)="preventEventKeyboard($event)" style="cursor: pointer">
+  <mat-icon matPrefix (click)="fileInput.click()" style="cursor: pointer">attach_file</mat-icon>
+  <mat-icon matSuffix *ngIf="file" (click)="file = null;fileName = ''" style="cursor:pointer">clear</mat-icon>
+</mat-form-field>
+<input hidden (change)="loadFile($event)" #fileInput type="file" id="file">
+<div style="display: inline-block;text-align: center;width: 100%">
+  <button mat-raised-button color="primary" (click)="sendMessage()">Envoyer</button>
+</div>
+

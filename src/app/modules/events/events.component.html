@@ -1,0 +1,78 @@
+<div class="over-add-button">
+  <mat-card style="padding: 0 0 10px; box-shadow: none; border-radius: 0;overflow-x: hidden">
+    <mat-list disableRipple *ngIf="dataComment.length > 0 && !displayComment">
+      <div style="display:flex;flex-direction: row;justify-content: space-around;width: 100%">
+        <div style="flex-grow: 1">
+        <h6  mat-subheader style="font-weight: bold">
+          <mat-icon style="cursor: pointer;" (click)="sort()" [ngStyle]="{'transform': (ascending)?'rotate(0deg)':'rotate(180deg)'}" matTooltip="{{getMessageTooltip()}}">sort</mat-icon>
+        </h6>
+        </div>
+        <div style="flex-grow: 1;text-align: right;padding-right: 24px">
+          <span  matBadge="{{dataComment.length}}" matBadgeOverlap="true">
+            <mat-icon style="color: gray">message</mat-icon>
+          </span>
+        </div>
+      </div>
+      <ng-container *ngFor="let comment of dataComment; let lastItem = last; let first = first; let index = index;">
+        <h6 mat-subheader>
+          <mat-icon mat-list-icon class="grey">insert_invitation</mat-icon>
+          {{comment.created | date: 'dd/MM/yyyy'}}
+        </h6>
+        <div class="messageItem" style="cursor: pointer;" (click)="displayCommentInBox(comment.comment, comment.created, comment.user, comment.eventType)">
+          <div *ngIf="getEventType(comment.eventType) === status">
+            <mat-icon mat-list-icon class="grey" [ngStyle]="{'color': ( (lastItem && ascending) || (first && !ascending) )?'orange':'gray'}">{{headIcon}}</mat-icon>
+          </div>
+          <div *ngIf="getEventType(comment.eventType) === message">
+            <mat-icon mat-list-icon class="grey" [ngStyle]="{'color': ((lastItem && ascending) || (first && !ascending))?'orange':'gray'}">comment</mat-icon>
+          </div>
+          <div *ngIf="getEventType(comment.eventType) === modification">
+            <mat-icon mat-list-icon class="grey" [ngStyle]="{'color': ((lastItem && ascending) || (first && !ascending))?'orange':'gray'}">edit</mat-icon>
+          </div>
+          <div class="mutedText">{{initials(comment.user) | uppercase}}</div>
+          <div class="mutedText">{{comment.created | date: 'HH:mm'}}</div>
+          <div style="text-align: left;" [innerHTML]="formatComment(comment.comment) | domEvent" [ngStyle]="{'color':((lastItem && ascending) || (first && !ascending))?'orange':'gray'}">
+          </div>
+        </div>
+        <div *ngIf="first" style="border-bottom: 1px dotted #575656;width: 90%;height: 1px;margin: 2px auto"></div>
+        <mat-divider *ngIf="!lastItem && !first"></mat-divider>
+      </ng-container>
+    </mat-list>
+    <!-- no comment filler -->
+    <mat-card-content *ngIf="dataComment.length < 1 && !displayComment" style="text-align: center">
+      <span class="empty-comment-filler">Aucun commentaire</span>
+    </mat-card-content>
+    <mat-card-content *ngIf="displayComment">
+      <div style="text-align: right;margin-right: 10px">
+        <mat-icon mat-list-icon class="grey" style="cursor: pointer;margin-top: 5px"
+                  (click)="displayComment = false; commentToDisplay = undefined;">clear
+        </mat-icon>
+      </div>
+      <div class="mutedText paddingDisplay" style="font-size: 13px">
+        {{displayDate | date: 'HH:mm'}} - {{displayDate | date: 'dd/MM'}}
+      </div>
+      <div class="commentDisplay paddingDisplay" [innerHTML]="commentToDisplay | domEvent">
+      </div>
+      <p class="mutedText" style="text-align: right; margin-right: 5px;" *ngIf="displayUser !=null && displayEvent === 'MESSAGE'">Auteur: {{displayUser.first_name + ' ' + displayUser.last_name.toUpperCase()}}</p>
+      <p class="mutedText" style="text-align: right; margin-right: 5px;" *ngIf="displayUser !=null && displayEvent === 'MODIFICATION'">Modifie par: {{displayUser.first_name + ' ' + displayUser.last_name.toUpperCase()}}</p>
+      <p class="mutedText" style="text-align: right; margin-right: 5px;" *ngIf="displayUser !=null && displayEvent === 'STATUS'">Crée par: {{displayUser.first_name + ' ' + displayUser.last_name.toUpperCase()}}</p>
+    </mat-card-content>
+  </mat-card>
+</div>
+<div>
+  <mat-card style="box-shadow: none; border-radius: 0 0 5px 5px;" *ngIf="!disabled">
+    <mat-form-field style="width: 100%; margin: 0;" appearance="outline">
+      <mat-label>Commentaire</mat-label>
+      <textarea placeholder="saissisez votre commentaire" rows="5" cols="33"
+                [disabled]="loading"
+                [(ngModel)]="newComment"
+                matInput
+                style="width: 100%; margin: 1px 0;" class="textArea">commentaire ...</textarea>
+    </mat-form-field>
+    <button mat-flat-button color="primary" class="addCommentButton"
+            [disabled]="loading || newComment.length === 0"
+            (click)="save()">
+      <span>Ajouter commentaire&nbsp;</span>
+      <mat-icon inline=true style="font-size: 18px">message</mat-icon>
+    </button>
+  </mat-card>
+</div>

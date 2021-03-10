@@ -1,0 +1,8 @@
+<div style="cursor: pointer" (click)="openFeedback()" *ngIf="data.clickable === true">
+  {{data.line1}}
+  <span *ngIf="data.line2"><br>{{data.line2}}</span>
+</div>
+<div style="cursor: default" *ngIf="!data.clickable">
+  {{data.line1}}
+  <span *ngIf="data.line2"><br>{{data.line2}}</span>
+</div>

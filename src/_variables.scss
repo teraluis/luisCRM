@@ -1,0 +1,38 @@
+@import 'theme.scss';
+
+// Create your Sass color vars (will be available in all the project)
+$primary: mat-color($theme-primary);
+$accent: mat-color($theme-accent);
+$warn:               #F49404;
+
+$color:              black;
+$background:         #EDEDED;
+
+$very-light-grey:    #F7F8FA;
+$light-grey:         #E2E2E3;
+$medium-light-grey:  #C7C8C9;
+$medium-grey:        #BDBDBD;
+$medium-strong-grey: #8d9093;
+$grey:               #707070;
+$adx-grey:           #575656;
+$strong-grey:        #696969;
+$very-strong-grey:   #424242;
+
+
+$red:                #DA3E3C;
+$orange:             #E7A548;
+$blue:               #8BC1DD;
+$light-blue:         #c4e5ff;
+$green:              #7DC900;
+
+$hover:              #E6F2F9;
+$selected:           #fedff2;
+
+//$light-theme: map-get($md-adxpalette, 50);
+
+$navbar-height: 64px;
+$container-padding: 30px;
+
+//Fonts
+$primary-font: "Lato", "Helvetica Neue", sans-serif;
+$secondary-font: "Roboto", "Helvetica Neue", sans-serif;

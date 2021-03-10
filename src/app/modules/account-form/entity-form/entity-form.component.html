@@ -1,0 +1,44 @@
+<form [formGroup]="entityForm">
+  <div class="two-column-grid">
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Nom *</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Raison sociale *</mat-label>
+        <input matInput formControlName="corporateName">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Description</mat-label>
+        <textarea matInput matTextareaAutosize matAutosizeMinRows="1" matAutosizeMaxRows="5" formControlName="description"></textarea>
+      </mat-form-field>
+    </div>
+    <div class="column">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Siren *</mat-label>
+        <input matInput formControlName="siren">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Domaine</mat-label>
+        <mat-select formControlName="domain">
+          <mat-option [value]="null"></mat-option>
+          <mat-option *ngFor="let domain of corporationDomains" [value]="domain">{{domain}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="type">
+          <mat-option [value]="null"></mat-option>
+          <mat-option *ngFor="let type of corporationTypes" [value]="type">{{type}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="form-bottom-actions" *ngIf="!data.disabled">
+    <div class="form-bottom-actions-right">
+      <button mat-button style="margin-right: 7px" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button mat-flat-button color="primary" [disabled]="saving|| !(this.entityForm.dirty && this.entityForm.valid)"  (click)="saveEntity()">Enregistrer</button>
+    </div>
+  </div>
+</form>

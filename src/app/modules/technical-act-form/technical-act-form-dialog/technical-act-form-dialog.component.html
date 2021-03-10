@@ -1,0 +1,8 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-technical-act-form
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (actSaved)="close($event)">
+  </app-technical-act-form>
+</div>

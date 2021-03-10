@@ -1,0 +1,154 @@
+<mat-card class="form-card mat-elevation-z0" style="width: 63vw; border-radius: 0 0 5px 5px; margin-bottom: 15px;">
+  <mat-card-content style="padding: 40px">
+    <div *ngIf="isLoading">
+      <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+    </div>
+
+    <form [formGroup]="orderForm">
+      <div class="two-column-with-footer-grid" *ngIf="!isLoading">
+        <div class="column" style="grid-area: left">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+            <mat-label>No bon de commande client *</mat-label>
+            <input matInput formControlName="referenceNumber">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+            <mat-label>Date de réception *</mat-label>
+            <input matInput
+                   placeholder="Choisir une date"
+                   [satDatepicker]="receive"
+                   formControlName="receiveDate"
+                   (click)="receive.open()"
+                   readonly>
+            <sat-datepicker #receive></sat-datepicker>
+            <sat-datepicker-toggle matSuffix [for]="receive"></sat-datepicker-toggle>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+            <mat-label>Date de visite conseil</mat-label>
+            <input matInput
+                   placeholder="Choisir une date"
+                   [satDatepicker]="adviceVisit"
+                   formControlName="adviceVisit"
+                   (click)="adviceVisit.open()"
+                   readonly>
+            <sat-datepicker #adviceVisit></sat-datepicker>
+            <sat-datepicker-toggle matSuffix [for]="adviceVisit"></sat-datepicker-toggle>
+          </mat-form-field>
+        </div>
+        <div class="column" style="grid-area: right">
+          <mat-form-field *ngIf="disabled || !modification" floatLabel="always" appearance="outline"
+                          class="bigger-form-field" color="accent"
+                          (click)="downloadFile()" style="cursor: pointer">
+            <mat-label style="cursor: pointer">Joindre le bon de commande *</mat-label>
+            <input matInput formControlName="referenceFile" style="cursor: pointer" disabled>
+            <mat-icon matSuffix (click)="downloadFile()" style="cursor: pointer; margin-right: 5px">
+              launch
+            </mat-icon>
+          </mat-form-field>
+
+          <mat-form-field *ngIf="!disabled && modification" floatLabel="always" appearance="outline"
+                          class="bigger-form-field" color="accent">
+            <mat-label>Joindre le bon de commande *</mat-label>
+            <input matInput *ngIf="newOrder.referenceFile" formControlName="referenceFile"
+                   (click)="downloadFile()" (keydown)="preventEventKeyboard($event)"
+                   class="input-file">
+            <input matInput *ngIf="!newOrder.referenceFile" formControlName="referenceFile"
+                   (click)="fileInput.click()"
+                   (keydown)="preventEventKeyboard($event)" class="input-file">
+            <mat-icon matPrefix *ngIf="!newOrder.referenceFile" (click)="fileInput.click()" style="cursor: pointer">
+              attach_file
+            </mat-icon>
+            <mat-icon matPrefix *ngIf="newOrder.referenceFile" (click)="downloadFile()"
+                      style="cursor: pointer; margin-right: 5px">launch
+            </mat-icon>
+            <mat-icon matSuffix *ngIf="newOrder.referenceFile" (click)="clearFileInput()" style="cursor:pointer">clear
+            </mat-icon>
+          </mat-form-field>
+
+
+          <input hidden (change)="onFileChange($event)" #fileInput type="file" id="file"
+                 [disabled]="disabled || !modification">
+
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+            <mat-label>Date limite de livraison *</mat-label>
+            <input matInput
+                   placeholder="Choisir une date"
+                   [satDatepicker]="deadline"
+                   formControlName="deadline"
+                   (click)="deadline.open()"
+                   readonly>
+            <sat-datepicker #deadline></sat-datepicker>
+            <sat-datepicker-toggle matSuffix [for]="deadline"></sat-datepicker-toggle>
+          </mat-form-field>
+
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+            <mat-label>Date de l'état des lieux</mat-label>
+            <input matInput
+                   placeholder="Choisir une date"
+                   [satDatepicker]="assessment"
+                   formControlName="assessment"
+                   (click)="assessment.open()"
+                   readonly>
+            <sat-datepicker #assessment></sat-datepicker>
+            <sat-datepicker-toggle matSuffix [for]="assessment"></sat-datepicker-toggle>
+          </mat-form-field>
+        </div>
+        <div class="center-footer">
+          <mat-form-field floatLabel="always" appearance="outline" style="width: 100%" color="accent">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" cdkTextareaAutosize cdkAutosizeMinRows="4"
+                      cdkAutosizeMaxRows="4"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="bottom-right" *ngIf="!disabled && modification">
+        <button mat-raised-button [disabled]="saving || orderForm.pristine" (click)="initialize()"
+                style="margin-right: 10px">
+          Annuler
+        </button>
+        <button mat-raised-button color="primary" [disabled]="saving || orderForm.pristine || orderForm.invalid" (click)="save()">
+          Enregistrer
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<div *ngIf="!isLoading">
+  <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;"
+                       *ngFor="let destination of order.reportDestinations">
+    <mat-expansion-panel-header>
+      <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+        <div style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+          <mat-icon style="margin: auto 5px auto 0;">play_for_work</mat-icon>
+          <span style="margin: auto 0;">{{getDestinationName(destination)}}</span><span
+          style="margin: auto 0 auto 5px; color: #8d9093; font-style: italic;"
+          *ngIf="!destination.order">(hérité)</span><span style="margin: auto; color: #8d9093;">Destination d'envoi du rapport</span>
+          <mat-icon style="margin: auto 5px auto 0; visibility: hidden;">play_for_work</mat-icon>
+          <span style="visibility: hidden;">{{getDestinationName(destination)}}</span><span style="visibility: hidden;"
+                                                                                            *ngIf="!destination.order">(hérité)</span>
+        </div>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div style="margin: 15px 45px;">
+      <app-report-destination-form
+        [data]="{mode: 'edit', order: order.uuid, disabled: disabled || !destination.order, deletable: !!destination.order, defaultData: destination}"
+        (repDestSaved)="updateReportDestination($event)"
+        (removeRepDest)="removeReportDestination($event)"></app-report-destination-form>
+    </div>
+  </mat-expansion-panel>
+  <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngIf="!disabled"
+                       #expansionPanel>
+    <mat-expansion-panel-header>
+      <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+        <div style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+          <mat-icon style="margin: auto 5px auto auto;">add</mat-icon>
+          <span style="margin: auto auto auto 0;">Ajouter une destination d'envoi du rapport</span>
+        </div>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div style="margin: 15px 45px;">
+      <app-report-destination-form [data]="{mode: 'create', order: order.uuid, disabled: disabled}"
+                                   (repDestSaved)="addReportDestination($event); expansionPanel.close(); expansionPanel.ngAfterContentInit();"></app-report-destination-form>
+    </div>
+  </mat-expansion-panel>
+</div>

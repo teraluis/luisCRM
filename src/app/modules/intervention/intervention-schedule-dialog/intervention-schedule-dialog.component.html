@@ -1,0 +1,65 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading || saving"></mat-progress-bar>
+
+<h3 class="mat-h3" style="font-size: 17px;">Renseignements sur l'intervention</h3>
+
+<app-datefield [inputName]="'Date prévue*'"
+               [disabled]="saving"
+               (valueChangeOutput)="changeInterventionStartDate($event)"></app-datefield>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Heure de début*</mat-label>
+  <input matInput [ngxTimepicker]="timePicker" [format]="24" [(ngModel)]="timePickerValue" [disabled]="saving" readonly>
+  <ngx-material-timepicker #timePicker
+                           [minutesGap]="5"
+                           [cancelBtnTmpl]="cancelBtn"
+                           [confirmBtnTmpl]="confirmBtn"
+                           [ngxMaterialTimepickerTheme]="adxTheme"></ngx-material-timepicker>
+
+  <ng-template #cancelBtn>
+    <button mat-button style="background-color: white; margin-left: auto; margin-right: 7px;">Annuler</button>
+  </ng-template>
+  <ng-template #confirmBtn>
+    <button mat-flat-button color="primary" style="margin-right: 5px;">Valider</button>
+  </ng-template>
+</mat-form-field>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Durée (min)*</mat-label>
+  <input matInput type="number" min="5" max="1440" step="5" [(ngModel)]="scheduleInfo.duration" [disabled]="saving">
+</mat-form-field>
+
+<h3 class="mat-h3" style="font-size: 17px;">Renseignements sur l'expert</h3>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Nom*</mat-label>
+  <input matInput [disabled]="saving"
+         [(ngModel)]="scheduleInfo.expert.lastName"
+         (keydown)="lastNameChange()"
+         [matAutocomplete]="auto"
+         (focusin)="suggest(scheduleInfo.expert.lastName)">
+  <mat-autocomplete #auto="matAutocomplete">
+    <mat-option *ngFor="let expert of suggestedExperts" [value]="expert.lastName" (click)="selectExpert(expert)">
+        <span style="display: flex; width: 100%;">
+          <span style="width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{expert.firstName | titlecase}}</span>
+          <span style="width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{expert.lastName | uppercase}}</span>
+          <span style="width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{expert.mail}}</span>
+        </span>
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Prénom*</mat-label>
+  <input matInput [ngClass]="!isNew() ? 'disabled-color' : ''" [(ngModel)]="scheduleInfo.expert.firstName" [disabled]="saving" [readonly]="!isNew()">
+</mat-form-field>
+
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>Email*</mat-label>
+  <input matInput [ngClass]="!isNew() ? 'disabled-color' : ''"  #email="ngModel" appValidateEmail [(ngModel)]="scheduleInfo.expert.mail" [disabled]="saving" [readonly]="!isNew()">
+</mat-form-field>
+
+<div style="margin-top: 15px; display: flex">
+  <button mat-button class="annulButton" style="margin-left: auto; margin-right: 7px;" [disabled]="saving" (click)="saveResult.next(false)">Annuler</button>
+  <button mat-flat-button color="primary" style="margin-right: 5px;" [disabled]="saving || !canSave() || !email.valid" (click)="save()">Enregistrer</button>
+</div>
+

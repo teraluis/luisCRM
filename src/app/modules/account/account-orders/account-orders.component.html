@@ -1,0 +1,7 @@
+<app-table-search-list [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                       [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading"
+                       (pageData)="setPageData($event)" (filterData)="setFilterData($event)" [router]="getRouterLink" [sidePanelType]="sidePanelType"
+                       [statusList]="getStatusList" [statusName]="getStatusName" [statusColor]="getStatusColor"></app-table-search-list>
+<div *ngIf="isEmpty" style="text-align: center; margin-top: 90px;">
+  <span style="color: #E2E2E3; font-style: italic; font-size: 30px;">Aucune commande pour ce compte</span>
+</div>

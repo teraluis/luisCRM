@@ -1,0 +1,9 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-user-form
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (removeUser)="close(null)"
+    (userSaved)="close($event)">
+  </app-user-form>
+</div>

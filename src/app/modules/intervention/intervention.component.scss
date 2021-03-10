@@ -1,0 +1,15 @@
+.card-locked {
+  border: 2px solid orange !important;
+}
+
+.over-add-button {
+  max-height: calc(100vh - 600px);
+  min-height: 110px;
+}
+
+.empty-comment-filler {
+  color: #CCC;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 60px;
+}

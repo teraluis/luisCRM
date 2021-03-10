@@ -1,0 +1,61 @@
+.hidden-header {
+  ::ng-deep .mat-tab-header {
+    display: none;
+  }
+}
+
+.header-button {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  ::ng-deep .mat-button-wrapper {
+    width: 100%;
+  }
+}
+
+.custom-estate-card {
+  display: flex;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.custom-estate-card:hover {
+  background-color: whitesmoke;
+}
+
+.custom-estate-card-title {
+  display: flex;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid #BDBDBD;
+  border-top: 1px solid #BDBDBD;
+  padding: 0;
+  background-color: #F7F8FA;
+}
+
+.custom-estate-card-text {
+  margin: auto 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+
+.shadow-right {
+  box-shadow: 5px 0px 5px -5px #BDBDBD;
+}
+
+.locality-panel {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-top: 1px solid #BDBDBD;
+}
+
+.locality-panel:first-child {
+  border-top: none;
+}

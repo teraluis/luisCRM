@@ -1,0 +1,69 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto"></mat-spinner></div>
+<mat-horizontal-stepper linear #stepper *ngIf="!loading" [ngClass]="data.inStep ? 'stepper-hidden' : 'stepper-disabled'">
+  <mat-step label="Sélectionner un compte" *ngIf="!data.defaultAccount">
+    <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" style="margin-top: 20px;">
+      <mat-label>Type de client</mat-label>
+      <mat-select class="grey-select" [(ngModel)]="selectedClientType">
+        <mat-option class="grey" [value]="clientTypes.ESTABLISHMENT">{{clientTypes.ESTABLISHMENT}}</mat-option>
+        <mat-option class="grey" [value]="clientTypes.INDIVIDUAL" disabled>{{clientTypes.INDIVIDUAL}}</mat-option> <!-- TODO active when calypso handled individuals -->
+        <mat-option class="grey" [value]="clientTypes.ACCOUNT" disabled>{{clientTypes.ACCOUNT}}</mat-option> <!-- TODO active if needed in future -->
+      </mat-select>
+    </mat-form-field>
+    <div *ngIf="selectedClientType === clientTypes.ESTABLISHMENT">
+      <app-establishment-form [data]="{mode: 'search', inStep: true}"
+                              (establishmentSaved)="selectEstablishment($event)" (cancelAction)="cancel.emit()"></app-establishment-form>
+    </div>
+    <div *ngIf="selectedClientType === clientTypes.INDIVIDUAL || selectedClientType === clientTypes.ACCOUNT">
+      <app-account-form [data]="{mode: 'search', inStep: true, forceType: selectedClientType === clientTypes.INDIVIDUAL ? accountTypes.INDIVIDUAL : accountTypes.PROFESSIONAL}"
+                        (accountSaved)="selectAccount($event)" (cancelAction)="cancel.emit()"></app-account-form>
+    </div>
+  </mat-step>
+  <mat-step label="Informations du bien">
+    <div class="two-column-grid" style="margin-top: 20px;">
+      <div class="column">
+        <div [ngSwitch]="customEstateType">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngSwitchCase="false">
+            <mat-label>Typologie de bien *</mat-label>
+            <mat-select class="grey-select" [(ngModel)]="selectedType" (selectionChange)="changeSelectionState($event)" #matSelect>
+              <mat-option class="grey" *ngFor="let estateType of estateTypeIds" [value]="estateType">{{getTypeName(estateType)}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent" *ngSwitchCase="true">
+            <mat-label>Autre type de bien *</mat-label>
+            <input matInput [(ngModel)]="estate.customEstateType" #other>
+            <mat-icon matSuffix (click)="clearOtherInput()" style="cursor:pointer">arrow_drop_down</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="column">
+        <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+          <mat-label>Créer un(e)</mat-label>
+          <mat-select class="grey-select" [(ngModel)]="defaultCreation">
+            <mat-option class="grey" [value]="creatableElement.PREMISES">{{creatableElement.PREMISES}}</mat-option>
+            <mat-option class="grey" [value]="creatableElement.ANNEX">{{creatableElement.ANNEX}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <mat-tab-group class="hidden-header" [selectedIndex]="defaultCreation === creatableElement.PREMISES ? 0 : 1">
+      <mat-tab>
+        <app-estate-form-premises [data]="{mode: 'create', disabled: !isComplete(), inStep: true, types: { heating: allTypes.heating, premises: allTypes.premises }}"
+                                  (premisesSaved)="selectPremises($event)" (cancelAction)="initialize(); back()"></app-estate-form-premises>
+      </mat-tab>
+      <mat-tab>
+        <app-estate-form-annex [data]="{mode: 'create', disabled: !isComplete(), inStep: true, annexTypes: allTypes.annex}"
+                               (annexSaved)="selectAnnex($event)" (cancelAction)="initialize(); back()"></app-estate-form-annex>
+      </mat-tab>
+    </mat-tab-group>
+    <div class="form-bottom-actions" *ngIf="!isComplete()">
+      <div class="form-bottom-actions-right grey">
+        <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="initialize(); back()">Annuler</button>
+        <button mat-flat-button color="primary" disabled>Suivant</button> <!-- handle by form-premises or form-annex -->
+      </div>
+    </div>
+  </mat-step>
+  <mat-step label="Adresse du bien">
+    <app-address-form [data]="{mode: 'create', disabled: saving, defaultData: {address: address}, types: addressTypes}"
+                      (addressSaved)="save($event)" (cancelAction)="back()"></app-address-form>
+  </mat-step>
+</mat-horizontal-stepper>

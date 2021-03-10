@@ -1,0 +1,49 @@
+<form [formGroup]="agencyForm">
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+    <mat-label>Code *</mat-label>
+    <input matInput formControlName="code">
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+    <mat-label>Nom *</mat-label>
+    <input matInput formControlName="name">
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+    <mat-label>Responsable *</mat-label>
+    <input matInput formControlName="manager" [matAutocomplete]="auto">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option class="grey" *ngFor="let user of suggestedUser" [value]="user">{{user.first_name}} {{user.last_name}}</mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field">
+    <mat-label>IBAN de reference ADX*</mat-label>
+    <input matInput formControlName="referenceIban">
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field">
+    <mat-label>BIC de reference ADX*</mat-label>
+    <input matInput formControlName="referenceBic">
+  </mat-form-field>
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field">
+    <mat-label>Bureaux</mat-label>
+    <mat-chip-list #chipList>
+      <mat-chip
+        *ngFor="let office of selectedOfficies"
+        [selectable]="false"
+        [removable]="false">
+        {{office.name}}
+      </mat-chip>
+      <input #officeInput formControlName="officies" [matAutocomplete]="autoffice" [matChipInputFor]="chipList">
+    </mat-chip-list>
+    <mat-autocomplete #autoffice="matAutocomplete" (optionSelected)="addOffice($event)">
+      <mat-option *ngFor="let office of filteredOfficies " [value]="office">
+        {{office.name}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <div class="form-bottom-actions" *ngIf="!data.disabled">
+    <div class="form-bottom-actions-right grey">
+      <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button type="submit" mat-flat-button color="primary" (click)="save()" [disabled]="saving || !(this.agencyForm.dirty && this.agencyForm.valid)">
+        Enregistrer</button>
+    </div>
+  </div>
+</form>

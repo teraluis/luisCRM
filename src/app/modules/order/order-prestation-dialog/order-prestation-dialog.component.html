@@ -1,0 +1,132 @@
+<div mat-dialog-title>
+  <mat-progress-bar mode="determinate" [value]="progressValue" *ngIf="saving"></mat-progress-bar>
+</div>
+<div mat-dialog-content class="modale" *ngIf="isLoading">
+  <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+</div>
+<div mat-dialog-content class="modale" *ngIf="!isLoading">
+
+  <mat-form-field floatLabel="never" appearance="outline" class="bigger-form-field" color="accent"
+                  *ngIf="!isSingleEstate">
+    <mat-label>{{data.prestationsWithTableLine.length + ' Biens sélectionnés'}}</mat-label>
+    <mat-select [disabled]="data.disabled || saving">
+      <mat-option *ngFor="let estate of data.prestationsWithTableLine; let i = index;" disabled>
+        <div style="display: flex; width: 100%; color: #575656 !important;">
+          <span style="margin: auto 0; width: 50px; text-align: center;">
+            {{(i + 1) + '/' + data.prestationsWithTableLine.length}}</span>
+          <mat-icon matTooltip="{{getEstateIconTooltip(estate)}}" style="margin: auto 0 auto 15px;">
+            {{getEstateIcon(estate)}}</mat-icon>
+          <span style="width: 50%; margin: auto 0;">
+            <span style="margin: auto 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <span matTooltip="Adresse">{{estate.estateTableLine.address}}</span></span>
+            <span style="margin: auto 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <span matTooltip="Localité">{{estate.estateTableLine.locality}}</span></span>
+          </span>
+          <span style="width: 15%; margin: auto; text-align: center;" *ngIf="!!estate.estateTableLine.number">
+            <span matTooltip="Numéro de logement">{{'N° ' + estate.estateTableLine.number}}</span></span>
+          <span style="width: 15%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+                *ngIf="!estate.estateTableLine.number">
+            Numéro</span>
+          <span style="width: 15%; margin: auto; text-align: center;" *ngIf="!!estate.estateTableLine.floor">
+            <span matTooltip="Étage">{{'Étage ' + estate.estateTableLine.floor}}</span></span>
+          <span style="width: 15%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+                *ngIf="!estate.estateTableLine.floor">
+            Étage</span>
+          <span
+            style="width: 20%; margin: auto; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+            *ngIf="!!estate.estateTableLine.reference">
+            <span matTooltip="Référence">{{estate.estateTableLine.reference}}</span></span>
+          <span style="width: 20%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+                *ngIf="!estate.estateTableLine.reference">
+            Référence</span>
+        </div>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-card style="display: flex; border-radius: 5px; box-shadow: none; border: 1px solid #BDBDBD;"
+            *ngIf="isSingleEstate">
+    <div style="display: flex; width: 100%;" class="grey">
+      <mat-icon matTooltip="{{getEstateIconTooltip(data.prestationsWithTableLine[0])}}" style="margin: auto 0;">
+        {{getEstateIcon(data.prestationsWithTableLine[0])}}</mat-icon>
+      <span style="width: 50%; margin: auto 0;">
+        <span style="margin: auto 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span matTooltip="Adresse">{{data.prestationsWithTableLine[0].estateTableLine.address}}</span></span>
+        <span style="margin: auto 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span matTooltip="Localité">{{data.prestationsWithTableLine[0].estateTableLine.locality}}</span></span>
+      </span>
+      <span style="width: 15%; margin: auto; text-align: center;"
+            *ngIf="!!data.prestationsWithTableLine[0].estateTableLine.number">
+        <span matTooltip="Numéro de logement">{{'N° ' + data.prestationsWithTableLine[0].estateTableLine.number}}</span></span>
+      <span style="width: 15%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+            *ngIf="!data.prestationsWithTableLine[0].estateTableLine.number">
+            Numéro</span>
+      <span style="width: 15%; margin: auto; text-align: center;"
+            *ngIf="!!data.prestationsWithTableLine[0].estateTableLine.floor">
+            <span matTooltip="Étage">{{'Étage ' + data.prestationsWithTableLine[0].estateTableLine.floor}}</span></span>
+      <span style="width: 15%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+            *ngIf="!data.prestationsWithTableLine[0].estateTableLine.floor">
+            Étage</span>
+      <span
+        style="width: 20%; margin: auto; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+        *ngIf="!!data.prestationsWithTableLine[0].estateTableLine.reference">
+            <span matTooltip="Référence">{{data.prestationsWithTableLine[0].estateTableLine.reference}}</span></span>
+      <span style="width: 20%; margin: auto; font-style: italic; color: #BDBDBD; text-align: center;"
+            *ngIf="!data.prestationsWithTableLine[0].estateTableLine.reference">
+            Référence</span>
+    </div>
+  </mat-card>
+
+  <div class="modal-content">
+    <div style="display: flex; width: 100%;">
+      <div style="display: flex; width: 50%; padding: 4px 0 1.25em 0;">
+        <mat-label class="grey" style="margin: auto 20px 10px 20px;">Actes techniques à réaliser :</mat-label>
+        <app-mat-select-autocomplete class="grid-7-11"
+                                     placeholder="Actes techniques"
+                                     searchPlaceholder="Rechercher"
+                                     [options]="options"
+                                     [disabled]="data.disabled || saving"
+                                     [selectedOptions]="currentData.selectedOptions"
+                                     (selectionChange)="checkPrestationTypes($event)">
+        </app-mat-select-autocomplete>
+      </div>
+      <div style="display: flex; width: 50%; margin-top: 19px;" *ngIf="data.order.market">
+        <mat-form-field class="bigger-form-field" color="accent">
+          <mat-label>BPU</mat-label>
+          <mat-select [(ngModel)]="selectedBpuFile" [disabled]="data.disabled || saving">
+            <mat-option *ngFor="let attachment of bpuAttachments" [value]="attachment">{{attachment.filename}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-icon-button style="margin: auto 37% auto 10px;" (click)="downloadBpu()">
+          <mat-icon>launch</mat-icon>
+        </button>
+        <button *ngIf="valueFacturationAnalysis()" mat-icon-button #tooltip="matTooltip" matTooltip="{{marketTooltip()}}"
+                matTooltipHideDelay="100000" style="margin: auto 37% auto 10px;">
+          <mat-icon>info</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div style="margin-top: 10px">
+      <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent"
+                      *ngIf="displayTextArea">
+        <mat-label>Descriptif des travaux à réaliser</mat-label>
+        <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" cdkAutosizeMaxRows="4"
+                  [(ngModel)]="currentData.workDescription" [disabled]="data.disabled || saving"></textarea>
+      </mat-form-field>
+    </div>
+    <app-billlines [lineDraftsSubject]="currentData.lineDrafts" [beautifulTotal]="false"
+                   [disabled]="disabledSubject"
+                   [market]="data.market"
+                   (valueChange)="currentData.commandLines = $event;"
+                   [analyseTypeList]="analyseTypeList"></app-billlines>
+  </div>
+</div>
+<div mat-dialog-actions style="padding: 0;" *ngIf="!data.disabled && !isLoading">
+  <div class="warn" style="display: flex; margin-right: auto; margin-bottom: 12px;" *ngIf="warning">
+    <mat-icon>warning</mat-icon>
+    <span style="margin-top: 4px; margin-left: 5px;">{{warningMessage}}</span>
+  </div>
+  <button mat-flat-button color="primary" style="margin: 10px 0 20px auto;"
+          [disabled]="saving || !checkComplete()"
+          (click)="saveAll()">{{isSingleEstate ? 'Enregistrer' : 'Enregistrer pour tous'}}
+  </button>
+</div>

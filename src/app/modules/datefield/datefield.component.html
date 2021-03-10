@@ -1,0 +1,8 @@
+<!-- TODO might need a refactor -->
+<mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field" color="accent">
+  <mat-label>{{inputName}}</mat-label>
+  <input matInput [(ngModel)]="dateString" (keydown)="handleDate($event)" placeholder="{{disabled ? '' : 'jj/mm/aaaa'}}" (click)="picker.open(); moveCursorToTheEnd($event)" (select)="moveCursorToTheEnd($event)" [disabled]="disabled">
+  <input type="hidden" [matDatepicker]="picker" [(ngModel)]="date" (dateInput)="setDate($event)" (dateChange)="setDate($event)" [disabled]="disabled">
+  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+  <mat-datepicker #picker color="primary"></mat-datepicker>
+</mat-form-field>

@@ -1,0 +1,145 @@
+@import '~@angular/material/theming';
+@include mat-core();
+
+$md-adx-primary: (
+  50 : #e6f6f9,
+  100 : #c0eaf0,
+  200 : #96dce7,
+  300 : #6ccddd,
+  400 : #4dc3d5,
+  500 : #2db8ce,
+  600 : #28b1c9,
+  700 : #22a8c2,
+  800 : #1ca0bc,
+  900 : #1191b0,
+  A100 : #e0f8ff,
+  A200 : #adedff,
+  A400 : #7ae2ff,
+  A700 : #60ddff,
+  contrast: (
+    50 : #ffffff,
+    100 : #ffffff,
+    200 : #ffffff,
+    300 : #ffffff,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #ffffff,
+    A200 : #ffffff,
+    A400 : #ffffff,
+    A700 : #ffffff,
+  )
+);
+
+$md-adx-secondary: (
+  50 : #ffeeee,
+  100 : #ffd4d4,
+  200 : #ffb7b7,
+  300 : #ff9a9a,
+  400 : #ff8484,
+  500 : #6dbcdb,
+  600 : #ff6666,
+  700 : #ff5b5b,
+  800 : #ff5151,
+  900 : #ff3f3f,
+  A100 : #ffffff,
+  A200 : #ffffff,
+  A400 : #ffe7e7,
+  A700 : #ffcece,
+  contrast: (
+    50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #000000,
+    500 : #000000,
+    600 : #000000,
+    700 : #000000,
+    800 : #000000,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+
+$md-adx-warn: (
+  50 : #fdf1e0,
+  100 : #fbdbb3,
+  200 : #f8c480,
+  300 : #f5ac4d,
+  400 : #f39a26,
+  500 : #f18800,
+  600 : #ef8000,
+  700 : #ed7500,
+  800 : #eb6b00,
+  900 : #e75800,
+  A100 : #ffffff,
+  A200 : #ffe6da,
+  A400 : #ffc3a7,
+  A700 : #ffb28e,
+  contrast: (
+    50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #000000,
+    500 : #000000,
+    600 : #000000,
+    700 : #000000,
+    800 : #000000,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+
+$general-typography: mat-typography-config(
+  $font-family: '"Lato", "Helvetica Neue", sans-serif',
+  $display-4:     mat-typography-level(112px, 112px, 300),
+  $display-3:     mat-typography-level(56px, 56px, 400),
+  $display-2:     mat-typography-level(45px, 48px, 400),
+  $display-1:     mat-typography-level(34px, 40px, 400),
+  $headline:      mat-typography-level(24px, 32px, 400),
+  $title:         mat-typography-level(20px, 32px, 500),
+  $subheading-2:  mat-typography-level(16px, 28px, 400),
+  $subheading-1:  mat-typography-level(15px, 24px, 400),
+  $body-2:        mat-typography-level(14px, 24px, 500),
+  $body-1:        mat-typography-level(14px, 20px, 400),
+  $caption:       mat-typography-level(12px, 20px, 400),
+  $button:        mat-typography-level(14px, 14px, 500),
+    // Line-height must be unit-less fraction of the font-size.
+  $input:         mat-typography-level(16px, 1.125, 400)
+  //$body-2:        mat-typography-level(14px, 24px, 600)
+);
+
+$secondary-typography: mat-typography-config(
+  $font-family: 'Roboto, sans-serif'
+);
+
+@include mat-core($general-typography);
+
+
+
+// define 3 theme color
+// mat-palette accepts $palette-name, main, lighter and darker variants
+$theme-primary:mat-palette($md-adx-primary, 700, 300, 900);
+$theme-accent: mat-palette($md-adx-secondary);
+$theme-warn: mat-palette($md-adx-warn, A200);
+$theme-light: mat-palette($md-adx-primary, 100);
+$theme-grey: mat-palette($mat-grey, 400);
+
+// create theme (use mat-dark-theme for themes with dark backgrounds)
+$theme: mat-light-theme(
+    $theme-primary,
+    $theme-accent,
+    $theme-warn
+);
+
+@include angular-material-theme($theme);

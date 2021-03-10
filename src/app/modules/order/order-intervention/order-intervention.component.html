@@ -1,0 +1,9 @@
+<app-table-search-list [dataSourceChange]="dataSourceChange" [displayedColumns]="displayedColumns" [hiddenColumns]="hiddenColumns" [columnsInfos]="columnsInfos"
+                       [maxRows]="maxRows" [options]="options" [loadEmitter]="isLoading" [router]="getRouterLink"
+                       [statusList]="getStatusList" [statusName]="getStatusName" [statusColor]="getStatusColor" [comboList]="getComboList"
+                       (pageData)="setPageData($event)" (filterData)="setFilterData($event)" (selectionChange)="selectedInterventions = $event.selected"></app-table-search-list>
+<div style="display: flex; float: left; margin-top: 20px;" *ngIf="!loading">
+  <button mat-flat-button color="primary" [disabled]="!isSelectionValid()" (click)="mergeInterventions()">
+    <span style="display: flex;"><mat-icon style="margin: auto 5px auto -5px; font-size: 20px; height: 20px;">content_copy</mat-icon><span>Associer les interventions</span></span>
+  </button>
+</div>

@@ -1,0 +1,180 @@
+services:
+  - docker:18.09-dind
+
+image: docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  KUBECTL_DL: https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+
+stages:
+  - build-artifact
+  - build-docker
+  - deploy
+  - build-artifact-prod
+  - build-docker-prod
+  - deploy-prod
+
+build-artifact-int:
+  stage: build-artifact
+  image: node:11.10.0-alpine
+  script:
+    - npm install
+    - npm run build-int
+  artifacts:
+    paths:
+      - dist/calypso/*
+  only:
+    - develop
+
+build-artifact-staging:
+  stage: build-artifact
+  image: node:11.10.0-alpine
+  script:
+    - npm install
+    - npm run build-staging
+  artifacts:
+    paths:
+      - dist/calypso/*
+  only:
+    - release-staging
+
+build-artifact-preprod:
+  stage: build-artifact
+  image: node:11.10.0-alpine
+  script:
+    - npm install
+    - npm run build-preprod
+  artifacts:
+    paths:
+      - dist/calypso/*
+  only:
+    - master
+
+build-docker-image:
+  stage: build-docker
+  script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/adx/calypso:$(echo $CI_COMMIT_SHA | cut -c1-7)
+    - docker push $CI_REGISTRY/adx/calypso:$(echo $CI_COMMIT_SHA | cut -c1-7)
+  only:
+    - develop
+    - release-staging
+    - master
+
+deploy-int:
+ stage: deploy
+ image: docker:latest
+ script:
+   - apk add --update curl
+   - curl -LO $KUBECTL_DL
+   - mkdir /kube
+   - echo "$KUBE_CONFIG" > /kube/kubeconfig.conf
+   - chmod +x kubectl
+   - apk add gettext
+   - export TPL_DOCKER_IMG_VERSION=$(echo $CI_COMMIT_SHA | cut -c1-7)
+   - sed -i "s/REGISTRY/$CI_REGISTRY/g" manifests/calypso.tpl.yml
+   - sed -i "s/TPL_DOCKER_IMG_VERSION/$TPL_DOCKER_IMG_VERSION/g" manifests/calypso.tpl.yml
+   - sed -i "s/INGRESS_URL/calypso.int.adx-groupe.com/g" manifests/ingress.yml
+   - ./kubectl apply --kubeconfig /kube/kubeconfig.conf -n int -f  manifests/
+ only:
+   - develop
+ tags:
+   - adg
+   - pp
+ dependencies:
+   - build-docker-image
+
+deploy-staging:
+  stage: deploy
+  image: docker:latest
+  script:
+    - apk add --update curl
+    - curl -LO $KUBECTL_DL
+    - mkdir /kube
+    - echo "$KUBE_CONFIG" > /kube/kubeconfig.conf
+    - chmod +x kubectl
+    - apk add gettext
+    - export TPL_DOCKER_IMG_VERSION=$(echo $CI_COMMIT_SHA | cut -c1-7)
+    - sed -i "s/REGISTRY/$CI_REGISTRY/g" manifests/calypso.tpl.yml
+    - sed -i "s/TPL_DOCKER_IMG_VERSION/$TPL_DOCKER_IMG_VERSION/g"  manifests/calypso.tpl.yml
+    - sed -i "s/INGRESS_URL/calypso.rec.adx-groupe.com/g" manifests/ingress.yml
+    - ./kubectl apply --kubeconfig /kube/kubeconfig.conf -n staging -f  manifests/
+  only:
+    - release-staging
+  tags:
+    - adg
+    - pp
+  dependencies:
+    - build-docker-image
+
+deploy-preprod:
+  stage: deploy
+  image: docker:latest
+  script:
+    - apk add --update curl
+    - curl -LO $KUBECTL_DL
+    - mkdir /kube
+    - echo "$KUBE_CONFIG_PROD" > /kube/kubeconfig.conf
+    - chmod +x kubectl
+    - apk add gettext
+    - export TPL_DOCKER_IMG_VERSION=$(echo $CI_COMMIT_SHA | cut -c1-7)
+    - sed -i "s/REGISTRY/$CI_REGISTRY/g" manifests/calypso.tpl.yml
+    - sed -i "s/TPL_DOCKER_IMG_VERSION/$TPL_DOCKER_IMG_VERSION/g" manifests/calypso.tpl.yml
+    - sed -i "s/INGRESS_URL/calypso.pprod.adx-groupe.com/g" manifests/ingress.yml
+    - ./kubectl apply --kubeconfig /kube/kubeconfig.conf -n preprod -f  manifests/
+  only:
+    - master
+  tags:
+    - adg
+    - pp
+  dependencies:
+    - build-docker-image
+
+build-artifact-prod:
+  stage: build-artifact-prod
+  image: node:11.10.0-alpine
+  script:
+    - npm install
+    - npm run build-prod
+  artifacts:
+    paths:
+      - dist/calypso/*
+  only:
+    - tags
+
+build-docker-image-prod:
+  stage: build-docker-prod
+  script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/adx/calypso:$CI_COMMIT_TAG
+    - docker push $CI_REGISTRY/adx/calypso:$CI_COMMIT_TAG
+  only:
+    - tags
+  dependencies:
+    - build-artifact-prod
+
+deploy-prod:
+  stage: deploy-prod
+  image: docker:latest
+  script:
+    - apk add --update curl
+    - curl -LO $KUBECTL_DL
+    - mkdir /kube
+    - echo "$KUBE_CONFIG_PROD" > /kube/kubeconfig.conf
+    - chmod +x kubectl
+    - apk add gettext
+    - export TPL_DOCKER_IMG_VERSION=$CI_COMMIT_TAG
+    - sed -i "s/REGISTRY/$CI_REGISTRY/g" manifests/calypso.tpl.yml
+    - sed -i "s/TPL_DOCKER_IMG_VERSION/$TPL_DOCKER_IMG_VERSION/g" manifests/calypso.tpl.yml
+    - sed -i "s/INGRESS_URL/calypso.adx-groupe.com/g" manifests/ingress.yml
+    - ./kubectl apply --kubeconfig /kube/kubeconfig.conf -n prod -f  manifests/
+  only:
+    - tags
+  tags:
+    - adg
+    - pp
+  dependencies:
+    - build-docker-image-prod

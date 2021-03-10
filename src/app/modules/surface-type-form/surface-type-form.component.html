@@ -1,0 +1,24 @@
+<div class="product-header">
+  <h4>Ajouter un nouveau type de surface</h4>
+  <p [ngStyle]="{'color': alreadyExists ? 'red' : 'green'}">{{message}}</p>
+  <p *ngIf="isNewSurfaceType()" style="color: red">Ceci n'est pas un nouveau type de surface.</p>
+</div>
+<form [formGroup]="surfaceTypeControl" (ngSubmit)="submitSurfaceType()">
+  <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey">
+    <mat-label>Type de surface *</mat-label>
+    <input matInput [formControl]="surfaceTypeControl"  [matAutocomplete]="auto" placeholder="nouveau type de surface">
+    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
+      <mat-option *ngFor="let option of surfaceFilteredOptions | async" [value]="option">
+        {{option.label}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <div class="form-bottom-actions">
+    <div class="form-bottom-actions-right grey">
+      <button type="button" mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+      <button type="submit" mat-flat-button color="primary"
+              [disabled]="saving || isValid()"
+      >Enregistrer</button>
+    </div>
+  </div>
+</form>

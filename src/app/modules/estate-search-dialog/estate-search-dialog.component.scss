@@ -1,0 +1,17 @@
+.search-bar {
+  ::ng-deep .mat-form-field-wrapper {
+    width: 96%;
+    margin-left: 3%;
+  }
+}
+
+::ng-deep .dialog-transparent {
+  mat-dialog-container{
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    color: transparent;
+    background-color: transparent;
+    overflow-x: hidden;
+  }
+}

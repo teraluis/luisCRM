@@ -1,0 +1,156 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+<form [formGroup]="estateForm">
+  <div *ngIf="!loading">
+    <div *ngIf="data.mode === mode.EDIT">
+      <!-- Edit mode -->
+      <div class="two-column-grid">
+        <div class="column">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Nom *</mat-label>
+            <input matInput formControlName="name" type="text">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Référence cadastrale</mat-label>
+            <input matInput formControlName="cadastralReference" type="text">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Date de construction</mat-label>
+            <input matInput type="date" formControlName="constructionDate"> <!-- TODO -->
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Coordonnées INSEE</mat-label>
+            <input matInput type="text" formControlName="inseeCoordinates">
+          </mat-form-field>
+        </div>
+        <div class="column">
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Nombre d'étages</mat-label>
+            <input matInput type="number" formControlName="floorQ">
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Est une copropriété ?</mat-label>
+            <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" formControlName="condominium">
+              <mat-option class="grey" [value]="true">Oui</mat-option>
+              <mat-option class="grey" [value]="false">Non</mat-option>
+              <mat-option class="grey" [value]="">Inconnu</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Date du permis de construire</mat-label>
+            <input matInput type="date" formControlName="buildingPermitDate"> <!-- TODO -->
+          </mat-form-field>
+          <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+            <mat-label>Type de chauffage</mat-label>
+            <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" (selectionChange)="changeHeatingType($event)" formControlName="heatingTypeId">
+              <mat-option class="grey" *ngFor="let type of heatingTypeList" [value]="type">{{getHeatingTypeName(type)}}</mat-option>
+              <mat-option class="grey" [value]="'unknow'">Inconnu</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-bottom-actions">
+        <div class="form-bottom-actions-left grey">
+          <button mat-flat-button class="red-delete-button" *ngIf="!data.disabled && data.mode === mode.EDIT && data.deletable && !data.defaultData.deleted" [disabled]="saving"
+                  (click)="delete(currentData)">Supprimer
+          </button>
+          <div class="warn" style="display: flex; margin-top: 5px;" *ngIf="data.defaultData && data.defaultData.deleted">
+            <mat-icon>warning</mat-icon>
+            <span style="margin-top: 4px; margin-left: 5px;">Bâtiment supprimé</span>
+          </div>
+        </div>
+        <div class="form-bottom-actions-right grey" *ngIf="!data.disabled">
+          <button mat-button style="margin-right: 7px;" [disabled]="saving" (click)="cancel()">Annuler</button>
+          <button mat-flat-button color="primary" [disabled]="saving || !(this.estateForm.dirty && this.estateForm.valid)" (click)="save();">
+            {{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+        </div>
+      </div>
+      <mat-divider style="margin: 20px 0;"></mat-divider>
+      <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none; margin-top: 20px; border: 1px solid #BDBDBD" *ngFor="let address of currentData.addresses">
+        <mat-expansion-panel-header>
+          <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+            <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">location_on</mat-icon><span style="margin: auto 0 auto 0;">{{getAddressName(address)}}</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div style="margin: 15px 45px;">
+          <app-address-form [data]="{mode: 'edit', disabled: data.disabled, deletable: !data.disabled && currentData.addresses.length > 1, defaultData: {address: address}, types: addressTypes}"
+                            (addressSaved)="updateAddress($event)" (removeAddress)="removeAddress(address)"></app-address-form>
+        </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none; margin-top: 20px; border: 1px solid #BDBDBD" *ngIf="!data.disabled"
+                           [(expanded)]="showAddAddress" (opened)="showAddAddress = true" (closed)="showAddAddress = false">
+        <mat-expansion-panel-header>
+          <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+            <mat-icon style="margin: auto 5px auto auto;">add</mat-icon><span style="margin: auto auto auto 0;">Ajouter une adresse</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div style="margin: 15px 45px;">
+          <app-address-form [data]="{mode: 'create', types: addressTypes}"
+                            (addressSaved)="addAddress($event); showAddAddress = false;" (cancelAction)="showAddAddress = false;"></app-address-form>
+        </div>
+      </mat-expansion-panel>
+    </div>
+    <!-- Create mode -->
+    <div *ngIf="data.mode === mode.CREATE">
+      <mat-horizontal-stepper linear #stepper [ngClass]="data.inStep ? 'stepper-hidden' : 'stepper-disabled'">
+        <mat-step label="Adresse du bâtiment">
+          <app-address-form [data]="{mode: 'create', inStep: true, defaultData: {address: data.defaultAddress}, types: addressTypes}"
+                            (addressSaved)="addAddress($event)" (cancelAction)="cancel()"></app-address-form>
+        </mat-step>
+        <mat-step label="Informations du bâtiment">
+          <div class="two-column-grid">
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Nom *</mat-label>
+                <input matInput type="text" formControlName="name">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Référence cadastrale</mat-label>
+                <input matInput type="text" formControlName="cadastralReference">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Date de construction</mat-label>
+                <input matInput formControlName="constructionDate" type="date"> <!-- TODO not disabled -->
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Coordonnées INSEE</mat-label>
+                <input matInput type="text" formControlName="inseeCoordinates">
+              </mat-form-field>
+            </div>
+            <div class="column">
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Nombre d'étages</mat-label>
+                <input matInput formControlName="floorQ" type="number">
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Est une copropriété ?</mat-label>
+                <mat-select class="grey-select" formControlName="condominium">
+                  <mat-option class="grey" [value]="true">Oui</mat-option>
+                  <mat-option class="grey" [value]="false">Non</mat-option>
+                  <mat-option class="grey" [value]="">Inconnu</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Date du permis de construire</mat-label>
+                <input matInput formControlName="buildingPermitDate" type="date"> <!-- TODO not disabled -->
+              </mat-form-field>
+              <mat-form-field floatLabel="always" appearance="outline" class="bigger-form-field grey" color="accent">
+                <mat-label>Type de chauffage</mat-label>
+                <mat-select [ngClass]="data.disabled ? '' : 'grey-select'" (selectionChange)="changeHeatingType($event)" formControlName="heatingTypeId">
+                  <mat-option class="grey" *ngFor="let type of heatingTypeList" [value]="type">{{getHeatingTypeName(type)}}</mat-option>
+                  <mat-option class="grey" [value]="'unknow'">Inconnu</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="form-bottom-actions">
+            <div class="form-bottom-actions-right grey">
+              <button mat-button style="margin-right: 7px;" [disabled]="saving" matStepperPrevious>Annuler</button>
+              <button mat-flat-button color="primary" [disabled]="saving || !(this.estateForm.dirty && this.estateForm.valid)" (click)="save();">
+                {{data.inStep ? 'Suivant' : 'Enregistrer'}}</button>
+            </div>
+          </div>
+        </mat-step>
+      </mat-horizontal-stepper>
+    </div>
+  </div>
+</form>

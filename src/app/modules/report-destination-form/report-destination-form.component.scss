@@ -1,0 +1,5 @@
+.grey-checked-option {
+  ::ng-deep .mat-button-toggle-checked {
+    background-color: lightgray;
+  }
+}

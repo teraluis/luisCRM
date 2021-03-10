@@ -1,0 +1,11 @@
+.grey-checked-option {
+  ::ng-deep .mat-button-toggle-checked {
+    background-color: lightgray;
+  }
+}
+
+.grey-select {
+  ::ng-deep .mat-select-value-text {
+    color: #575656;
+  }
+}

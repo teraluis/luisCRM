@@ -1,0 +1,61 @@
+@import "../../../variables.scss";
+
+mat-sidenav-container {
+  height: calc(100%);
+  overflow: auto;
+
+  .border-toolbar {
+    border-bottom: 1px solid $light-grey;
+  }
+  .sidenav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-top: $navbar-height;
+    height: calc(100% - #{$navbar-height});
+    border-right: 0;
+    background-color: $primary;
+  }
+}
+
+
+.toggleBar {
+  position: absolute;
+  bottom: 0px;
+  background-color: grey;
+  color: white;
+  height: 40px;
+}
+
+
+.settingsAndId {
+  position: absolute;
+  bottom: 0px;
+  overflow: hidden;
+}
+
+.sidenav-container {
+  padding-top: $navbar-height;
+  background-color: $background;
+}
+
+.sidenav-content-container {
+  height: 100%;
+  overflow: auto;
+  background-color: $background;
+}
+
+.feedback {
+  border: none;
+  background-color: transparent;
+  color: #FFFFFF;
+  box-shadow: unset;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.modal {
+  margin-right: 10px;
+}
+
+

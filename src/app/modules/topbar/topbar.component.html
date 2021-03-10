@@ -1,0 +1,245 @@
+<mat-toolbar  class="topbar" style="display: flex;">
+  <span style="width: 20%; font-family: 'Roboto', 'Helvetica Neue', sans-serif; font-weight: 400;color: white;margin-left:10px; cursor: pointer" routerLink="/dashboard"><img src="../../../assets/images/logo.png" style="height: 32px;width: 32px;vertical-align: bottom;margin-right: 10px">Calypso</span>
+
+  <div #searchBar class="searchbar-container" style="display: flex; width: 60%">
+    <input [disabled]="false" type="text" class="searchbar" [(ngModel)]="searchValue" placeholder="Rechercher une commande, une intervention, un compte ..." (keyup)="search($event.target.value)" (keydown.enter)="validate()">
+    <!--button mat-icon-button (click)="reIndex()"><mat-icon>refresh</mat-icon></button--> <!-- force reindex of selectedIndex -->
+  </div>
+
+  <div #dropdown [hidden]="!dropdownOpened" class="searchbar-dropdown" (appClickOutside)="hideDropDown()">
+    <div *ngIf="orderResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showOrder()">
+        <span style="font-size: 14px; float: left;">Commandes</span>
+        <span style="float: right; display: flex;" *ngIf="allOrderResults.length > 3">{{displayOrder ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayOrder ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of orderResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightblue;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">No. commande</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Compte</div>
+            <div class="cell-content"> {{result.account ? result.account.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Marché</div>
+            <div class="cell-content"> {{result.market ? result.market.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Donneur d'ordre</div>
+            <div class="cell-content"> {{result.purchaser ? result.purchaser.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Référence client</div>
+            <div class="cell-content"> {{result.referenceNumber || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="interventionResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showIntervention()">
+        <span style="font-size: 14px; float: left;">Interventions</span>
+        <span style="float: right; display: flex;" *ngIf="allInterventionResults.length > 3">{{displayIntervention ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayIntervention ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of interventionResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightsalmon;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">Nom</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Statut</div>
+            <div class="cell-content"> {{getInterventionStatus(result.status)}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Adresse d'intervention</div>
+            <div class="cell-content"> {{result.estate ? result.estate.address : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">N° commande</div>
+            <div class="cell-content"> {{result.order ? result.order.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Compte</div>
+            <div class="cell-content"> {{result.account ? result.account.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div  *ngIf="professionalResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showProfessional()">
+        <span style="font-size: 14px; float: left;">Comptes</span>
+        <span style="float: right; display: flex;" *ngIf="allProfessionalResults.length > 3">{{displayProfessional ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayProfessional ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of professionalResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightgrey;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">Nom</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Commercial</div>
+            <div class="cell-content"> {{result.commercial ? result.commercial.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Siren</div>
+            <div class="cell-content"> {{result.entity.siren || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Contact principal</div>
+            <div class="cell-content"> {{result.people.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Adresse</div>
+            <div class="cell-content"> {{result.address || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div  *ngIf="establishmentResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showEstablishment()">
+        <span style="font-size: 14px; float: left;">Établissements</span>
+        <span style="float: right; display: flex;" *ngIf="allEstablishmentResults.length > 3">{{displayEstablishment ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayEstablishment ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of establishmentResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightseagreen;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">Nom</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Activité</div>
+            <div class="cell-content"> {{result.activity || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Siret</div>
+            <div class="cell-content"> {{result.siret}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Contact principal</div>
+            <div class="cell-content"> {{result.people ? result.people.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Adresse</div>
+            <div class="cell-content"> {{result.address || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div  *ngIf="individualResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showIndividual()">
+        <span style="font-size: 14px; float: left;">Particuliers</span>
+        <span style="float: right; display: flex;" *ngIf="allIndividualResults.length > 3">{{displayIndividual ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayIndividual ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of individualResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightgreen;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">Nom</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Commercial</div>
+            <div class="cell-content"> {{result.commercial ? result.commercial.name : '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Catégorie</div>
+            <div class="cell-content"> {{result.category}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Contact principal</div>
+            <div class="cell-content"> {{result.people.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Adresse</div>
+            <div class="cell-content"> {{result.address || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div  *ngIf="localityResults.length > 0">
+      <button mat-stroked-button class="header-button grey" (click)="showLocality()">
+        <span style="font-size: 14px; float: left;">Bâtiments</span>
+        <span style="float: right; display: flex;" *ngIf="allLocalityResults.length > 3">{{displayLocality ? 'voir moins' : 'voir plus'}}<mat-icon style="margin-top: 5px;">{{displayLocality ? 'arrow_drop_up' : 'arrow_drop_down'}}</mat-icon></span>
+      </button>
+      <div *ngFor="let result of localityResults">
+        <mat-divider></mat-divider>
+        <div class="cell" style="border-left: 5px solid lightcoral;" (click)="goToDetail(result)">
+          <div>
+            <div class="cell-title">Adresse</div>
+            <div class="cell-content"> {{result.address}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Nom</div>
+            <div class="cell-content"> {{result.name}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Référence cadastrale</div>
+            <div class="cell-content"> {{result.cadastralReference || '-'}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Nombre de locaux</div>
+            <div class="cell-content"> {{result.nbPremises}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Nombre d'annexes</div>
+            <div class="cell-content"> {{result.nbAnnexes}} </div>
+          </div>
+          <div>
+            <div class="cell-title">Date de création</div>
+            <div class="cell-content"> {{result.created | date: 'dd/MM/yyyy'}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <mat-spinner *ngIf="dropdownLoading" [diameter]="20" style="margin: 20px auto;"></mat-spinner>
+  </div>
+
+  <div style="display: flex; width: 20%; justify-content: flex-end;">
+    <div style="line-height: 64px">
+      <mat-icon style="color: white;vertical-align: text-bottom">info</mat-icon>
+
+      <button mat-icon-button (click)="logout()">
+        <mat-icon style="color: white;cursor: pointer;vertical-align: text-bottom">exit_to_app</mat-icon>
+      </button>
+
+<!--      <button mat-icon-button [matMenuTriggerFor]="appMenu">-->
+<!--        <mat-icon style="color: white;cursor: pointer;vertical-align: text-bottom">more_vert</mat-icon>-->
+<!--      </button>-->
+    </div>
+
+<!--    <mat-menu [backdropClass]="'sg-vertical-sub-menu'" #appMenu="matMenu">-->
+<!--      <button (click)="logout()" mat-menu-item>-->
+<!--        <mat-icon>exit_to_app</mat-icon>-->
+<!--        <span>Déconnexion</span>-->
+<!--      </button>-->
+<!--    </mat-menu>-->
+  </div>
+
+</mat-toolbar>

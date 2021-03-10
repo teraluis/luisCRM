@@ -1,0 +1,28 @@
+@import "../../../variables.scss";
+
+.item-table-wrapper {
+  width: 100%;
+}
+
+.item-table {
+  width: 100%;
+}
+
+.mat-cell {
+  color: $adx-grey;
+  border-bottom-color: #C8DDFF;
+}
+
+.mat-header-cell {
+  color: $adx-grey;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-bottom-color: #C8DDFF;
+}
+
+.mat-menu-item {
+  height: 1.2rem;
+  line-height: 1.2rem;
+  font-size: 0.8rem;
+  color: #ffffff;
+}

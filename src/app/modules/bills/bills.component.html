@@ -1,0 +1,20 @@
+<mat-progress-bar *ngIf="workInProgress" class="sticky-progress-bar" mode="indeterminate"></mat-progress-bar>
+
+<div class="page-title content-margin">
+  <div class="name">Factures</div>
+</div>
+
+<div id="datagrid-wrapper" style="margin:20px 40px">
+  <app-datagrid [dataSource]="dataSourceTable" [columnInfo]="columnsInfos" [action]="datagridAction"
+                style="margin-right: 40px; width: calc(100% - 32px)"
+                (pageChanged)="pagination = $event" (filterChanged)="filter = $event" (sortChanged)="sort = $event"
+                dataGridId="bill" [canExportAndImportFilter]="true" [globalAction]="datagridGlobalAction">
+  </app-datagrid>
+</div>
+
+<app-side-panel-new #sidePanel [content]="sidePanelContent" [canNavigate]="true"
+                    [dataSource]="dataSourceSidePanel" [filter]="filter" [page]="pagination" [sort]="sort"
+                    (setContent)="loadSidePanelData($event)"></app-side-panel-new>
+
+<!-- TODO : use user rights -->
+<app-plus-button *ngIf="!production" [data]="actionData"></app-plus-button>

@@ -1,0 +1,108 @@
+<div style="display: flex; width: 100%;">
+  <mat-card style="width: 90%; margin: auto; display: flex; border: 1px solid #BDBDBD; border-radius: 50px; box-shadow: none; padding: 0;">
+    <mat-form-field class="search-bar" style="width: 90%; margin-left: 1%;">
+      <mat-label>Rechercher</mat-label>
+      <input matInput style="color: #575656;" [(ngModel)]="filterField" (keydown.enter)="searchEstate()" placeholder="Adresse ou référence...">
+    </mat-form-field>
+    <button mat-icon-button matTooltip="Rechercher" matTooltipPosition="above" style="background-color: white; width: 70px; margin-left: 5%; height: 70px; border: 1px solid #22a8c2;"
+            *ngIf="!loading" [disabled]="!filterField || filterField.length < 2"  (click)="searchEstate()">
+      <mat-icon style="color: #22a8c2; font-size: 35px; margin-left: -10px;" [ngStyle]="{'color': !filterField || filterField.length < 2 ? 'rgba(0, 0, 0, 0.26)' : '#22a8c2' }">search</mat-icon></button>
+    <button mat-icon-button style="background-color: white; width: 70px; margin-left: 5%; height: 70px; border: 1px solid #22a8c2;"
+            *ngIf="loading" disabled><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></button>
+  </mat-card>
+  <button mat-icon-button matTooltip="Créer un bien" matTooltipPosition="above" style="margin: 15px; width: 70px; height: 70px; border: 1px solid;" [ngStyle]="{'background-color': firstSearchDone ? (noResult ? '#22a8c2' : 'white') : 'white', 'border-color': firstSearchDone ? (noResult ? 'white' : '#22a8c2') : 'rgba(0, 0, 0, 0.26)'}"
+          [disabled]="loading || !firstSearchDone" (click)="validateEstate()">
+    <mat-icon style="font-size: 40px; margin-left: -15px;" [ngStyle]="{'color': firstSearchDone ? (noResult ? 'white' : '#22a8c2') : 'rgba(0, 0, 0, 0.26)'}">add</mat-icon>
+  </button>
+</div>
+
+<mat-card *ngIf="noResult" style="text-align: center;" class="grey">
+  Aucun résultat, veuillez créer un nouveau bien.
+</mat-card>
+<mat-accordion *ngIf="!noResult">
+  <mat-expansion-panel style="margin-bottom: 15px; margin-top: 15px; border-radius: 5px; box-shadow: none; border-bottom: 1px solid #BDBDBD;" *ngFor="let estate of suggestedEstate" [expanded]="suggestedEstate.length === 1"
+                       (opened)="selectedEstate = estate" (closed)="selectedEstate = undefined">
+    <mat-expansion-panel-header>
+      <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px; border-bottom: 1px solid #BDBDBD;" class="grey">
+        <mat-icon style="margin: auto 0; width: 5%;" *ngIf="!isSelected(estate)">add_shopping_cart</mat-icon>
+        <mat-icon style="margin: auto 0; width: 5%; color: #7DC900;" *ngIf="isSelected(estate)">shopping_cart</mat-icon>
+        <span style="margin: auto 0; width: 10%; padding-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span matTooltip="{{estate.estateReference ? 'Référence' : 'Référence ADX'}}">{{estate.estateReference ? estate.estateReference : estate.adxReference}}</span></span>
+        <mat-icon style="margin: auto 5px auto -5px; width: 5%; text-align: center;" matTooltip="{{'Type de bien: ' + (estate.customEstateType ? estate.customEstateType : estate.estateType.type)}}">{{getEstateIcon(estate)}}</mat-icon>
+        <span style="margin: auto 0; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span matTooltip="Adresse">{{getLocalityAddress(estate.localities[0])}}</span></span>
+        <span style="margin: auto 0; width: 20%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span matTooltip="Client">{{getOwnerName(estate)}}</span></span>
+        <div style="display: flex; width: 20%;">
+          <span style="margin: auto;">{{estate.localities.length}}</span><mat-icon style="margin: auto;" matTooltip="Bâtiment">apartment</mat-icon>
+          <span style="margin: auto;">{{getNbPremises(estate.localities)}}</span><mat-icon style="margin: auto;" matTooltip="Local">house</mat-icon>
+          <span style="margin: auto;">{{getNbAnnexes(estate.localities)}}</span><mat-icon style="margin: auto;" matTooltip="Annexe">house_siding</mat-icon>
+        </div>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div style="padding: 0 24px 0 calc(5% + 24px);">
+      <mat-accordion>
+        <mat-expansion-panel style="margin-top: 0; margin-bottom: 0; border-radius: 0; box-shadow: none; border-bottom: 1px solid #BDBDBD;" *ngFor="let locality of estate.localities" [expanded]="estate.localities.length === 1">
+          <mat-expansion-panel-header style="padding: 0 10px 0 0;">
+            <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+              <span style="margin: auto 0; width: 10%; padding-left: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span matTooltip="Référence">{{locality.cadastralReference === undefined || locality.cadastralReference === null ? '-' : locality.cadastralReference}}</span></span>
+              <mat-icon style="margin: auto 0; width: 5%; padding-left: 5px; text-align: center;" matTooltip="Bâtiment">apartment</mat-icon>
+              <span style="margin: auto 0; width: 40%; padding-left: 6px;">
+                <span matTooltip="Adresse">{{getLocalityAddress(locality)}}</span></span>
+              <span style="margin: auto 0; width: 10%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span matTooltip="Nombre d'étages">{{locality.floorQ === undefined || locality.floorQ === null ? '-' : (locality.floorQ + (locality.floorQ > 1 ? ' étages' : ' étage'))}}</span></span>
+              <span style="margin: auto 0; width: 20%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span matTooltip="Nom">{{locality.name === undefined || locality.name === null ? '-' : locality.name}}</span></span>
+              <span style="margin: auto 0; width: 15%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span matTooltip="Date de création">{{locality.creationDate | date: 'dd/MM/yyyy'}}</span></span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div style="max-height: 20vh; overflow-y: scroll;">
+            <mat-expansion-panel style="margin-left: calc(10% + 11px); border-radius: 0; box-shadow: none;" *ngFor="let premises of locality.premises" disabled hideToggle>
+              <mat-expansion-panel-header style="padding: 0 10px 0 0;">
+                <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+                  <mat-icon style="margin: auto 0; width: 5%; text-align: center;" matTooltip="{{getPremisesLabel(estate)}}">house</mat-icon>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Référence">{{premises.premisesReference === undefined || premises.premisesReference === null ? '-' : premises.premisesReference}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Numéro d'étage">{{premises.floor === undefined || premises.floor === null ? '-' : 'Étage ' + premises.floor}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Numéro de logement">{{premises.number === undefined || premises.number === null ? '-' : 'N° ' + premises.number}}</span></span>
+                  <span style="margin: auto 0; width: 20%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Type de logement">{{premises.customPremisesType ? premises.customPremisesType : (premises.premisesType ? premises.premisesType.type : '-')}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Surface">{{premises.area === undefined || premises.area === null ? '-' : premises.area + ' m²'}}</span></span>
+                  <span style="margin: auto 0; width: 27%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Personne à contacter">{{!premises.contact ? '-' : getContactName(premises.contact)}}</span></span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+            <mat-expansion-panel style="margin-left: calc(10% + 11px); border-radius: 0; box-shadow: none;" *ngFor="let annex of locality.annexes" disabled hideToggle>
+              <mat-expansion-panel-header style="padding: 0 10px 0 0;">
+                <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+                  <mat-icon style="margin: auto 0; width: 5%; text-align: center;" matTooltip="Annexe">house_siding</mat-icon>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Référence">{{annex.annexReference === undefined || annex.annexReference === null ? '-' : annex.annexReference}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Numéro d'étage">{{annex.floor === undefined || annex.floor === null ? '-' : 'Étage ' + annex.floor}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{annex.isCommonArea === undefined || annex.isCommonArea === null ? '' : (annex.isCommonArea ? 'Partie commune' : 'Partie privée')}}</span>
+                  <span style="margin: auto 0; width: 20%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Type d'annexe">{{annex.customAnnexType ? annex.customAnnexType : (annex.annexType ? annex.annexType.type : '-')}}</span></span>
+                  <span style="margin: auto 0; width: 12%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span matTooltip="Surface">{{annex.area === undefined || annex.area === null ? '-' : annex.area + ' m²'}}</span></span>
+                  <span style="margin: auto 0; width: 27%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">&nbsp;</span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <div style="float: right; margin-top: 15px;">
+        <button mat-flat-button color="primary" style="margin-left: 8px;" (click)="validateEstate(estate)">Sélectionner ce bien</button>
+      </div>
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>
+

@@ -1,0 +1,365 @@
+<div *ngIf="loading"><mat-spinner [diameter]="30" style="margin: auto;"></mat-spinner></div>
+<div *ngIf="!loading">
+  <!-- classic mode-->
+    <div class="grey" style="display: flex; width: 100%; margin-bottom: 10px; margin-top: 10px; box-shadow: 0 5px 5px -5px #BDBDBD;" *ngIf="!data.dialogMode">
+      <mat-icon style="margin: auto;">{{getEstateIcon(estate)}}</mat-icon>
+      <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+        <mat-label>Typologie de bien</mat-label>
+        <mat-select [(ngModel)]="estateTypeId" (selectionChange)="changeEstateType($event)">
+          <mat-option *ngFor="let type of estateTypeIds" [value]="type">{{getTypeName(type)}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+        <mat-label>Référence patrimoine</mat-label>
+        <input matInput [(ngModel)]="estate.estateReference" placeholder="{{estate.adxReference}}">
+      </mat-form-field>
+      <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+        <mat-label>Client</mat-label>
+        <input matInput [(ngModel)]="ownerName" disabled>
+      </mat-form-field>
+      <button mat-flat-button color="primary" style="height: 36px; margin: auto auto 27px auto;" [ngStyle]="{'visibility': isEstateChanged() ? 'visible' : 'hidden'}"
+              (click)="save()" [disabled]="saving">Enregistrer</button>
+    </div>
+  <!-- -->
+  <!-- dialog mode-->
+    <!-- Main panel title bar -->
+    <mat-card *ngIf="tabIndex === 0 && data.dialogMode" style="margin-top: -72px; background-color: #22a8c2; position: fixed; width: calc(80vw - 32px); border-radius: 4px 4px 0 0; box-shadow: none; display: flex; color: white;">
+      <mat-icon style="font-size: 30px; margin-top: -4px; margin-left: 5px; margin-right: auto;">{{getEstateIcon(estate)}}</mat-icon>
+      <span style="width: 25%; margin: auto; text-align: center;">
+        <span class="grey">Type:</span>&nbsp;&nbsp;&nbsp;
+        <span>{{estate.customEstateType ? estate.customEstateType : estate.estateType.type}}</span>
+      </span>
+      <span style="width: 25%; margin: auto; text-align: center;">
+        <span class="grey">Référence:</span>&nbsp;&nbsp;&nbsp;
+        <span>{{estate.estateReference ? estate.estateReference : estate.adxReference}}</span>
+      </span>
+      <span style="width: 25%; margin: auto; text-align: center;">
+        <span class="grey">Client:</span>&nbsp;&nbsp;&nbsp;
+        <span>{{ownerName}}</span>
+      </span>
+      <mat-icon style="font-size: 30px; margin-top: -5px; margin-right: 15px; margin-left: auto; cursor: pointer;" *ngIf="!data.disabled"
+                (click)="showEditEstate = !showEditEstate;">edit</mat-icon>
+    </mat-card>
+    <!-- Edit main panel title bar -->
+    <mat-expansion-panel *ngIf="tabIndex === 0 && data.dialogMode" style="box-shadow: none;" [(expanded)]="showEditEstate" disabled hideToggle>
+      <mat-expansion-panel-header style="margin-top: -72px;">
+        <mat-panel-title></mat-panel-title>
+      </mat-expansion-panel-header>
+      <div style="display: flex; width: 100%; border-bottom: 1px solid #BDBDBD; margin-top: 10px;">
+        <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+          <mat-label>Typologie de bien</mat-label>
+          <mat-select [(ngModel)]="estateTypeId" (selectionChange)="changeEstateType($event)">
+            <mat-option *ngFor="let type of estateTypeIds" [value]="type">{{getTypeName(type)}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+          <mat-label>Référence patrimoine</mat-label>
+          <input matInput [(ngModel)]="estate.estateReference" placeholder="{{estate.adxReference}}">
+        </mat-form-field>
+        <mat-form-field style="width: 25%; margin: auto;" floatLabel="always">
+          <mat-label>Client</mat-label>
+          <input matInput [(ngModel)]="ownerName" disabled>
+        </mat-form-field>
+        <button mat-flat-button color="primary" style="height: 36px; margin: auto auto 27px auto;"
+                (click)="save()" [disabled]="saving">Enregistrer</button>
+      </div>
+    </mat-expansion-panel>
+    <!-- Secondary panel title bar -->
+    <mat-card *ngIf="tabIndex !== 0 && data.dialogMode" style="margin-top: -72px; background-color: #22a8c2; position: fixed; width: calc(80vw - 32px); border-radius: 4px 4px 0 0; box-shadow: none; display: flex; color: white;">
+      <button mat-icon-button style="background-color: white; width: 30px; height: 30px; line-height: 24px; margin-bottom: -5px; margin-top: -5px; box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);"
+              (click)="tabIndex = 0;">
+        <mat-icon class="grey" style="font-size: 20px;">keyboard_backspace</mat-icon>
+      </button>
+      <!-- Locality title bar -->
+      <div style="display: flex; width: 100%;" *ngIf="tabIndex === 1">
+        <span style="width: calc(50% - 46px); margin: auto; text-align: center; display: flex;">
+          <mat-icon style="margin: -2px 10px -2px 20px;" class="grey" matTooltip="Bâtiment">apartment</mat-icon>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!!localityToEdit">
+            {{getLocalityAddress(localityToEdit)}}</span>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!localityToEdit">
+            Création d'un bâtiment</span>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: center;">
+          <span class="grey">{{localityToEdit && localityToEdit.cadastralReference ? 'Référence:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{localityToEdit ? localityToEdit.cadastralReference : ''}}</span>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: right;">
+          <span class="grey">{{localityToEdit && localityToEdit.creationDate ? 'Création:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{localityToEdit ? (localityToEdit.creationDate | date: 'dd/MM/yyyy') : ''}}</span>
+        </span>
+      </div>
+      <!-- Premises title bar -->
+      <div style="display: flex; width: 100%;" *ngIf="tabIndex === 2">
+        <span style="width: calc(50% - 46px); margin: auto; text-align: center; display: flex;">
+          <mat-icon style="margin: -2px 10px -2px 20px;" class="grey" matTooltip="{{getPremisesLabel(estate)}}">house</mat-icon>
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!!premisesToEdit">
+            {{getLocalityAddress(localityToEdit)}}</div>
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!premisesToEdit">
+            Création d'un local</div>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: center;" *ngIf="!!premisesToEdit">
+          <span class="grey">{{premisesToEdit.premisesReference ? 'Référence:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{premisesToEdit.premisesReference ? premisesToEdit.premisesReference : ''}}</span>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: right;" *ngIf="!!premisesToEdit">
+          <span class="grey">{{premisesToEdit.area ? 'Surface:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{premisesToEdit.area ? premisesToEdit.area + ' m²' : ''}}</span>
+        </span>
+        <span style="width: 50%; margin: auto; text-align: right; display: flex;" *ngIf="!premisesToEdit">
+          <div style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{getLocalityAddress(localityToEdit)}}</div>
+        </span>
+      </div>
+      <!-- Annex title bar -->
+      <div style="display: flex; width: 100%;" *ngIf="tabIndex === 3">
+        <span style="width: calc(50% - 46px); margin: auto; text-align: center; display: flex;">
+          <mat-icon style="margin: -2px 10px -2px 20px;" class="grey" matTooltip="Annexe">house_siding</mat-icon>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!!annexToEdit">
+            {{getLocalityAddress(localityToEdit)}}</span>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" *ngIf="!annexToEdit">
+            Création d'une annexe</span>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: center;" *ngIf="!!annexToEdit">
+          <span class="grey">{{annexToEdit.annexReference ? 'Référence:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{annexToEdit.annexReference ? annexToEdit.annexReference : ''}}</span>
+        </span>
+        <span style="width: 25%; margin: auto; text-align: right;" *ngIf="!!annexToEdit">
+          <span class="grey">{{annexToEdit.area ? 'Surface:' : ''}}</span>&nbsp;&nbsp;&nbsp;
+          <span>{{annexToEdit.area ? annexToEdit.area + ' m²' : ''}}</span>
+        </span>
+        <span style="width: 50%; margin: auto; text-align: right; display: flex;" *ngIf="!annexToEdit">
+          <span style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{getLocalityAddress(localityToEdit)}}</span>
+        </span>
+      </div>
+    </mat-card>
+  <!-- end title -->
+
+  <!-- Main panel -->
+  <mat-tab-group class="hidden-header" [(selectedIndex)]="tabIndex">
+    <mat-tab>
+      <!-- Content -->
+      <div style="padding: 0 24px; overflow-y: scroll;" [ngStyle]="{'max-height': data.dialogMode ? '70vh' : '60vh'}">
+        <mat-accordion>
+
+          <!-- ***** LOCALITY ***** -->
+          <mat-expansion-panel class="locality-panel" *ngFor="let locality of estate.localities" [hideToggle]="estate.localities.length === 1"
+                               [expanded]="estate.localities.length === 1 || (localityToEdit && locality.id === localityToEdit.id)" (opened)="localityToEdit = locality" [disabled]="estate.localities.length === 1">
+            <mat-expansion-panel-header style="padding: 0 10px 0 0; color: #575656 !important;">
+              <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+                <!-- order mode -->
+                  <button mat-stroked-button class="header-button grey shadow-right" style="margin: auto auto auto 2px; text-align: center; width: 5%; padding: 10px 0;" disabled *ngIf="data.orderMode">
+                    <mat-icon class="green">{{isSelectedLocality(locality) ? 'check' : ''}}</mat-icon>
+                  </button>
+                <!-- -->
+                <span *ngIf="!!locality.cadastralReference" style="margin: auto 0; width: 10%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span matTooltip="Référence cadastrale">{{locality.cadastralReference}}</span></span>
+                <span *ngIf="!locality.cadastralReference" style="margin: auto 0; width: 10%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: italic; color: #BDBDBD;">
+                  Référence</span>
+                <mat-icon style="margin: auto 8px auto 2px; width: 5%; text-align: center;" matTooltip="Bâtiment">apartment</mat-icon>
+                <span style="margin: auto 0; width: 34%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span matTooltip="Adresse">{{getLocalityAddress(locality)}}</span></span>
+                <span *ngIf="locality.floorQ !== undefined && locality.floorQ !== null" style="margin: auto 0; width: 9%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span matTooltip="Nombre d'étages">{{locality.floorQ + (locality.floorQ > 1 ? ' étages' : ' étage')}}</span></span>
+                <span *ngIf="locality.floorQ === undefined || locality.floorQ === null" style="margin: auto 0; width: 9%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: italic; color: #BDBDBD;">
+                  Étages</span>
+                <span *ngIf="locality.name !== undefined && locality.name !== null" style="margin: auto 0; width: 18%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span matTooltip="Nom">{{locality.name}}</span></span>
+                <span *ngIf="locality.name === undefined || locality.name === null" style="margin: auto 0; width: 18%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: italic; color: #BDBDBD;">
+                  Nom</span>
+                <span style="margin: auto 0; width: 14%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span matTooltip="Date de création">{{locality.creationDate | date: 'dd/MM/yyyy'}}</span></span>
+                <button mat-stroked-button class="header-button grey mat-elevation-z2" style="margin: auto; text-align: center; width: 5%; padding: 10px 0;" [ngStyle]="{'margin-right': estate.localities.length === 1 ? '18px' : '10px'}"
+                        (click)="$event.stopPropagation(); editLocality(locality)">
+                  <mat-icon style="margin-top: -3px">{{data.disabled ? 'visibility' : 'edit'}}</mat-icon>
+                </button>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="display: flex; width: 100%;">
+              <div style="display: flex; flex-direction: column;" [ngStyle]="{'margin-left': data.orderMode ? 'calc(15% - 2px)' : 'calc(10% - 2px)', 'width': data.orderMode ? '85%' : '90%'}">
+
+                <!-- ***** PREMISES ***** -->
+                <mat-card class="grey custom-estate-card-title">
+                  <!-- classic mode -->
+                    <div class="header-button grey shadow-right" style="width: calc(5% + 9px); height: 100%; margin: auto 0;" *ngIf="!data.orderMode">
+                      <span style="margin: auto;">{{locality.premises.length}}</span>
+                    </div>
+                  <!-- -->
+                  <!-- order mode -->
+                    <button mat-stroked-button class="header-button grey shadow-right" style="width: calc(5% + 9px); margin: auto 0; text-align: center;"
+                            *ngIf="data.orderMode && !isAllPremisesSelected(locality)" [disabled]="data.disabled || locality.premises.length < 1" (click)="selectAllPremises(locality)">
+                      <mat-icon>{{data.disabled ? '' : 'add_shopping_cart'}}</mat-icon>
+                    </button>
+                    <button mat-stroked-button class="header-button grey shadow-right" style="width: calc(5% + 9px); margin: auto 0; text-align: center;"
+                            *ngIf="data.orderMode && isAllPremisesSelected(locality)" [disabled]="data.disabled || isAllDefaultPremises(locality)" (click)="unselectAllPremises(locality)">
+                      <mat-icon class="green">{{isAllDefaultPremises(locality) ? 'check' : 'shopping_cart'}}</mat-icon>
+                    </button>
+                  <!-- -->
+                  <span style="height: 28px; padding-top: 10px; margin-left: 10px;">{{getPremisesLabel(estate, true)}}</span>
+                </mat-card>
+                <mat-card class="grey custom-estate-card" *ngFor="let premises of locality.premises">
+                  <!-- classic mode -->
+                    <div class="header-button grey" style="width: calc(5% + 14px); height: 100%; margin: auto 0;" *ngIf="!data.orderMode">
+                      <!-- blank -->
+                    </div>
+                  <!-- -->
+                  <!-- order mode -->
+                    <button mat-stroked-button class="header-button grey" style="width: calc(5% + 9px); margin: auto; text-align: center;" [ngClass]="data.disabled ? '' : 'mat-elevation-z2'"
+                            *ngIf="data.orderMode && !isSelectedPremises(premises)" [disabled]="data.disabled" (click)="selectPremises(premises)">
+                      <mat-icon>{{data.disabled ? '' : 'add_shopping_cart'}}</mat-icon>
+                    </button>
+                    <button mat-stroked-button class="header-button grey" style="width: calc(5% + 9px); margin: auto; text-align: center;" [ngClass]="data.disabled || isDefaultPremises(premises) ? 'shadow-right' : 'mat-elevation-z2'"
+                            *ngIf="data.orderMode && isSelectedPremises(premises)" [disabled]="data.disabled || isDefaultPremises(premises)" (click)="selectPremises(premises)">
+                      <mat-icon class="green">{{data.disabled || isDefaultPremises(premises) ? 'check' : 'shopping_cart'}}</mat-icon>
+                    </button>
+                  <!-- -->
+                  <span *ngIf="!!premises.premisesReference" class="custom-estate-card-text" style="width: 16%; padding-left: 10px;">
+                    <span matTooltip="Référence patrimoine">{{premises.premisesReference}}</span></span>
+                  <span *ngIf="!premises.premisesReference" class="custom-estate-card-text" style="width: 16%; font-style: italic; color: #BDBDBD; padding-left: 10px;">
+                    Référence</span>
+                  <span *ngIf="premises.number !== undefined && premises.number !== null" class="custom-estate-card-text" style="width: 12%;">
+                    <span matTooltip="Numéro de logement">{{'N° ' + premises.number}}</span></span>
+                  <span *ngIf="premises.number === undefined || premises.number === null" class="custom-estate-card-text" style="width: 12%; font-style: italic; color: #BDBDBD;">
+                    Numéro</span>
+                  <span *ngIf="premises.floor !== undefined && premises.floor !== null" class="custom-estate-card-text" style="width: 13%;">
+                    <span matTooltip="Numéro d'étage">{{'Étage ' + premises.floor}}</span></span>
+                  <span *ngIf="premises.floor === undefined || premises.floor === null" class="custom-estate-card-text" style="width: 13%; font-style: italic; color: #BDBDBD;">
+                    Étage</span>
+                  <span class="custom-estate-card-text" style="width: 14%;">
+                    <span matTooltip="Type de logement">{{premises.customPremisesType ? premises.customPremisesType : premises.premisesType.type}}</span></span>
+                  <span *ngIf="premises.area !== undefined && premises.area !== null" class="custom-estate-card-text" style="width: calc(12% - 9px);">
+                    <span matTooltip="Surface">{{premises.area + ' m²'}}</span></span>
+                  <span *ngIf="premises.area === undefined || premises.area === null" class="custom-estate-card-text" style="width: calc(12% - 9px); font-style: italic; color: #BDBDBD;">
+                    Surface</span>
+                  <span *ngIf="!!premises.contact" class="custom-estate-card-text" style="width: 24%;">
+                    <span matTooltip="Personne à contacter">{{getContactName(premises.contact)}}</span></span>
+                  <span *ngIf="!premises.contact" class="custom-estate-card-text" style="width: 24%; font-style: italic; color: #BDBDBD;">
+                    Contact</span>
+                  <button mat-stroked-button class="header-button grey mat-elevation-z2" style="width: calc(5% + 9px); margin: auto 26px auto auto; text-align: center;"
+                          (click)="editPremises(locality, premises)">
+                    <mat-icon style="margin-top: -3px;">{{data.disabled ? 'visibility' : 'edit'}}</mat-icon>
+                  </button>
+                </mat-card>
+                <button mat-stroked-button class="header-button grey" style="padding: 4px 0; text-align: left;" *ngIf="!data.disabled && (estateTypeDisplay !== HOUSE_TYPE || locality.premises.length < 1)"
+                        (click)="createPremises(locality)">
+                  <mat-icon style="margin: auto 0; width: calc(5% + 9px); text-align: center;">add</mat-icon>
+                  <span style="margin-left: 10px;">{{'Ajouter ' + (getPremisesLabel(estate) === 'Maison' ? 'une ' : 'un ') + getPremisesLabel(estate)}}</span>
+                </button>
+                <mat-card class="custom-estate-card" *ngIf="data.disabled && locality.premises.length < 1">
+                  <span style="font-style: italic; color: #BDBDBD; margin-left: 20px; line-height: 40px;">Aucun élément</span>
+                </mat-card>
+
+                <!-- ***** ANNEX ***** -->
+                <mat-card class="grey custom-estate-card-title">
+                  <!-- classic mode -->
+                    <div class="header-button grey shadow-right" style="width: calc(5% + 9px); height: 100%; margin: auto 0;" *ngIf="!data.orderMode">
+                      <span style="margin: auto;">{{locality.annexes.length}}</span>
+                    </div>
+                  <!-- -->
+                  <!-- order mode -->
+                    <button mat-stroked-button class="header-button grey shadow-right" style="width: calc(5% + 9px); margin: auto 0; text-align: center;"
+                            *ngIf="data.orderMode && !isAllAnnexesSelected(locality)" [disabled]="data.disabled || locality.annexes.length < 1" (click)="selectAllAnnexes(locality)">
+                      <mat-icon>{{data.disabled ? '' : 'add_shopping_cart'}}</mat-icon>
+                    </button>
+                    <button mat-stroked-button class="header-button grey shadow-right" style="width: calc(5% + 9px); margin: auto 0; text-align: center;"
+                            *ngIf="data.orderMode && isAllAnnexesSelected(locality)" [disabled]="data.disabled || isAllDefaultAnnex(locality)" (click)="unselectAllAnnexes(locality)">
+                      <mat-icon class="green">{{isAllDefaultAnnex(locality) ? 'check' : 'shopping_cart'}}</mat-icon>
+                    </button>
+                  <!-- -->
+                  <span style="height: 28px; padding-top: 10px; margin-left: 10px;">Annexes</span>
+                </mat-card>
+                <mat-card class="grey custom-estate-card" *ngFor="let annex of locality.annexes">
+                  <!-- classic mode -->
+                    <div class="header-button grey" style="width: calc(5% + 14px); height: 100%; margin: auto 0;" *ngIf="!data.orderMode">
+                      <!-- blank -->
+                    </div>
+                  <!-- -->
+                  <!-- order mode -->
+                    <button mat-stroked-button class="header-button grey" style="width: calc(5% + 9px); margin: auto; text-align: center;" [ngClass]="data.disabled ? '' : 'mat-elevation-z2'"
+                            *ngIf="data.orderMode && !isSelectedAnnex(annex)" [disabled]="data.disabled" (click)="selectAnnex(annex)">
+                      <mat-icon>{{data.disabled ? '' : 'add_shopping_cart'}}</mat-icon>
+                    </button>
+                    <button mat-stroked-button class="header-button grey mat-elevation-z2" style="width: calc(5% + 9px); margin: auto; text-align: center;" [ngClass]="data.disabled || isDefaultAnnex(annex) ? 'shadow-right' : 'mat-elevation-z2'"
+                            *ngIf="data.orderMode && isSelectedAnnex(annex)" [disabled]="data.disabled || isDefaultAnnex(annex)" (click)="selectAnnex(annex)">
+                      <mat-icon class="green">{{data.disabled || isDefaultAnnex(annex) ? 'check' : 'shopping_cart'}}</mat-icon>
+                    </button>
+                  <!-- -->
+                  <span *ngIf="!!annex.annexReference" class="custom-estate-card-text" style="width: 16%; padding-left: 10px;">
+                      <span matTooltip="Référence patrimoine">{{annex.annexReference}}</span></span>
+                  <span *ngIf="!annex.annexReference" class="custom-estate-card-text" style="width: 16%; font-style: italic; color: #BDBDBD; padding-left: 10px;">
+                      Référence</span>
+                  <span class="custom-estate-card-text" style="width: 12%;">
+                    {{annex.isCommonArea === undefined || annex.isCommonArea === null ? '' : (annex.isCommonArea ? 'Partie commune' : 'Partie privée')}}</span>
+                  <span *ngIf="annex.floor !== undefined && annex.floor !== null" class="custom-estate-card-text" style="width: 13%;">
+                    <span matTooltip="Numéro d'étage">{{'Étage ' + annex.floor}}</span></span>
+                  <span *ngIf="annex.floor === undefined || annex.floor === null" class="custom-estate-card-text" style="width: 13%; font-style: italic; color: #BDBDBD;">
+                    Étage</span>
+                  <span *ngIf="!!annex.customAnnexType || !!annex.annexType" class="custom-estate-card-text" style="width: 14%;">
+                    <span matTooltip="Type d'annexe">{{annex.customAnnexType ? annex.customAnnexType : annex.annexType.type}}</span></span>
+                  <span *ngIf="!annex.customAnnexType && !annex.annexType" class="custom-estate-card-text" style="width: 14%; font-style: italic; color: #BDBDBD;">
+                    Type d'annexe</span>
+                  <span *ngIf="annex.area !== undefined && annex.area !== null" class="custom-estate-card-text" style="width: calc(12% - 9px);">
+                    <span matTooltip="Surface">{{annex.area + ' m²'}}</span></span>
+                  <span *ngIf="annex.area === undefined || annex.area === null" class="custom-estate-card-text" style="width: calc(12% - 9px); font-style: italic; color: #BDBDBD;">
+                    Surface</span>
+                  <span class="custom-estate-card-text" style="width: 24%;">&nbsp;</span> <!-- blank -->
+                  <button mat-stroked-button class="header-button grey mat-elevation-z2" style="width: calc(5% + 9px); margin: auto 26px auto auto; text-align: center;"
+                          (click)="editAnnex(locality, annex)">
+                    <mat-icon style="margin-top: -3px;">{{data.disabled ? 'visibility' : 'edit'}}</mat-icon>
+                  </button>
+                </mat-card>
+                <button mat-stroked-button class="header-button grey" style="padding: 4px 0; text-align: left;" *ngIf="!data.disabled"
+                        (click)="createAnnex(locality)">
+                  <mat-icon style="margin: auto 0; width: calc(5% + 9px); text-align: center;">add</mat-icon>
+                  <span style="margin-left: 10px;">Ajouter une Annexe</span>
+                </button>
+                <mat-card class="custom-estate-card" *ngIf="data.disabled && locality.annexes.length < 1">
+                  <span style="font-style: italic; color: #BDBDBD; margin-left: 20px; line-height: 40px;">Aucun élément</span>
+                </mat-card>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+      <div style="padding: 0 24px; border-top: 1px solid #BDBDBD; box-shadow: 0 -15px 10px -15px #BDBDBD; position: sticky; display: flex; margin-bottom: 1px;">
+        <button mat-stroked-button class="header-button grey" style="padding: 4px 0; text-align: left;" *ngIf="!data.disabled"
+                (click)="createLocality()">
+          <mat-icon style="margin: auto 0; width: 5%; text-align: center;">add</mat-icon>
+          <span>Ajouter un Bâtiment</span>
+        </button>
+        <div style="float: right; margin-top: 10px; margin-left: 24px;" *ngIf="!data.disabled && data.orderMode">
+          <button mat-flat-button color="primary" [disabled]="!(selectedAnnexes.length > 0 || selectedPremises.length > 0)"
+                  (click)="validate()">Valider la sélection</button>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Locality create/edit panel -->
+    <mat-tab>
+      <!-- Content -->
+      <div style="padding: 0 24px;" *ngIf="tabIndex === 1">
+        <app-estate-form-locality [data]="{mode: !localityToEdit ? 'create' : 'edit', disabled: data.disabled, deletable: !!localityToEdit && !data.orderMode && estate.localities.length > 1, defaultData: localityToEdit, defaultAddress: (localityToEdit ? undefined : estate.localities[0].addresses[0]), heatingTypes: allTypes.heating}"
+                                  (removeLocality)="removeLocality($event)" (localitySaved)="updateLocality($event)" (cancelAction)="tabIndex = 0"></app-estate-form-locality>
+      </div>
+    </mat-tab>
+
+    <!-- Premises create/edit panel -->
+    <mat-tab>
+      <!-- Content -->
+      <div style="padding: 0 24px;" *ngIf="tabIndex === 2">
+        <app-estate-form-premises [data]="{mode: !premisesToEdit ? 'create' : 'edit', disabled: data.disabled, deletable: !!premisesToEdit && !data.orderMode, defaultData: premisesToEdit, types: { heating: allTypes.heating, premises: allTypes.premises }}"
+                                  (removePremises)="removePremises($event)" (premisesSaved)="updatePremises($event)" (cancelAction)="tabIndex = 0"></app-estate-form-premises>
+      </div>
+    </mat-tab>
+
+    <!-- Annex create/edit panel -->
+    <mat-tab>
+      <!-- Content -->
+      <div style="padding: 0 24px;" *ngIf="tabIndex === 3">
+        <app-estate-form-annex [data]="{mode: !annexToEdit ? 'create' : 'edit', disabled: data.disabled, deletable: !!annexToEdit && !data.orderMode, defaultData: annexToEdit, annexTypes: allTypes.annex}"
+                               (removeAnnex)="removeAnnex($event)" (annexSaved)="updateAnnex($event)" (cancelAction)="tabIndex = 0"></app-estate-form-annex>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+

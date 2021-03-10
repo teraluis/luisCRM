@@ -1,0 +1,186 @@
+<div class="page-title content-margin">
+  <div class="name">Tableau de Bord</div>
+</div>
+
+<div style="display:grid; grid-template-columns: repeat(2, 1fr); grid-gap: 20px; width: 100%"> <!-- Ici le container parent -->
+
+  <div class="cell">
+    <div class="group-card-jauges">
+
+      <mat-card routerLink="/orders" class="example-card1" style="margin-top: 60px">
+        <mat-card-header>
+          <i class="material-icons blue" style="margin-left: 20px;font-size: 55px;">shopping_basket</i>
+        </mat-card-header>
+        <mat-card-content>
+          <p style="margin-top: 30px;" >Commandes</p>
+          <p style="font-size: x-large">{{this.ordersCount}}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="jauges">
+        <div>
+          <span class="text">Reçues</span>
+          <span class="styles" mat-raised-button style="padding: 6px; margin-bottom: 5px;">{{this.orderReceivedCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.orderReceivedCount == 0 ? 0: this.orderReceivedCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">Renseignées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.orderFilledCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.orderFilledCount == 0 ? 0: this.orderFilledCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">En production</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{orderProductionCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.orderProductionCount == 0 ? 0: this.orderProductionCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">Facturables</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{ordersBillableCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.ordersBillableCount == 0 ? 0: this.ordersBillableCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">Honorées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{ordersHonoredCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.ordersHonoredCount == 0 ? 0: this.ordersHonoredCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">Clôturées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{ordersClosedCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.ordersClosedCount == 0 ? 0: this.ordersClosedCount * 100 / this.ordersCount}}"></mat-progress-bar>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="group-card-jauges">
+      <mat-card routerLink="/bills" class="example-card1" style="background-color: #6dbcdb;margin-top: 60px">
+        <mat-card-header>
+          <i class="material-icons blue" style="margin-left: 20px;font-size: 55px;">euro</i>
+        </mat-card-header>
+        <mat-card-content>
+          <p style="margin-top: 30px;" >Facturation</p>
+          <p style="font-size: x-large">{{this.billsCount}}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="jauges" style="margin-top: 40px">
+        <div>
+          <span class="text">Factures à vérifier</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.billsToVerifiedCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.billsToVerifiedCount == 0 ? 0: this.billsToVerifiedCount * 100 / this.billsCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text">Factures vérifiées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.billsVerifiedCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.billsVerifiedCount == 0 ? 0: this.billsVerifiedCount * 100 / this.billsCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text"> Factures émises</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.billsSent}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.billsSent == 0 ? 0: this.billsSent * 100 / this.billsCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text"> Factures annulées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.billsCancelled}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.billsCancelled == 0 ? 0: this.billsCancelled * 100 / this.billsCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span class="text"> Facture réglées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{this.billReceived}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.billReceived == 0 ? 0: this.billReceived * 100 / this.billsCount}}"></mat-progress-bar>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="cell" >
+    <div class="group-card-jauges">
+      <mat-card routerLink="/interventions" class="example-card" style="font-weight: bold;color:#6dbcdb; text-align: center;cursor: pointer; margin-top: 130px;">
+        <mat-card-header>
+          <i class="material-icons blue" style="margin-left: 20px;font-size: 55px;color: #6dbcdb">people</i>
+        </mat-card-header>
+        <mat-card-content>
+          <p style="margin-top: 30px;">Interventions</p>
+          <p style="font-size: x-large">{{this.interCount}}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="jauges" style="margin-top: 40px;">
+        <div>
+          <span  class="text">Brouillons</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interDraftCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interDraftCount == 0 ? 0: this.interDraftCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span  class="text">Crées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interCreatedCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interCreatedCount == 0 ? 0: this.interCreatedCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span  class="text">Prêtes</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interSettledCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interSettledCount == 0 ? 0: this.interSettledCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span  class="text">À planifier</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interToScheduledCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interToScheduledCount == 0 ? 0: this.interToScheduledCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+        <div>
+          <span  class="text">Planifiées</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interScheduledCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interScheduledCount == 0 ? 0: this.interScheduledCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+        <div>
+        <div>
+          <span  class="text">Incomplètes</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interIncompleteCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interIncompleteCount == 0 ? 0: this.interIncompleteCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+          <div>
+          <span  class="text">Rapports rédigés</span>
+          <span class="styles" mat-raised-button style="padding: 6px;margin-bottom: 5px;">{{interDoneCount}}</span>
+          <mat-progress-bar class="progress-bar" mode="determinate" value="{{this.interDoneCount == 0 ? 0: this.interDoneCount * 100 / this.interCount}}"></mat-progress-bar>
+        </div>
+      </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cell">
+    <mat-card class="traitement">
+      <mat-card-header style="margin-bottom: 15px;color: #575656">Temps de traitement</mat-card-header>
+      <mat-card-content>
+        <mat-divider></mat-divider>
+
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr);width: 100%">
+
+       <span *ngIf="ordersCount !== 0 && chartContent!== 0">
+          <app-pie-chart [pieChartData]="pieChartData" [labels]="pieChartLabels" [pieColors]="pieColors"></app-pie-chart>
+        </span>
+          <span style="margin-top: 65px; margin-left: 20px" *ngIf="ordersCount === 0">Il n'y a pas de commande enregistrée</span>
+          <span style="margin-top: 65px; margin-left: 20px" *ngIf="ordersCount !== 0 && chartContent === 0">Aucune commande avec une date limite de livraison</span>
+
+          <div>
+
+            <div style="margin-top: 10px;">
+              <span  class="text">Commandes en retard</span>
+              <span class="styles" mat-raised-button style="padding: 5px;">{{this.deadlineCloseCount + this.deadlineOutdatedCount}}</span>
+              <mat-progress-bar class="progress-bar" mode="determinate" value="{{(this.deadlineCloseCount+ this.deadlineOutdatedCount) == 0 ? 0: (this.deadlineCloseCount + this.deadlineOutdatedCount) * 100 / this.ordersCount}}" color="warn" style="display: inline-block"></mat-progress-bar>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <div style="width: 100%; margin-bottom: 10px; display: flex;"><span class="styles-left" mat-raised-button style="padding: 5px; background-color: #7DC900;">{{this.deadlineOkCount}}</span><span class="text-traitement" style="margin: auto 10px;">Dans les délais</span></div>
+              <div style="width: 100%; margin-bottom: 10px; display: flex;"><span class="styles-left" mat-raised-button style="padding: 5px; background-color: #ffa700;">{{this.deadlineCloseCount}}</span><span class="text-traitement" style="margin: auto 10px;">Arrive à échéance</span></div>
+              <div style="width: 100%; margin-bottom: 10px; display: flex;"><span class="styles-left" mat-raised-button style="padding: 5px; background-color: #fc4349;">{{this.deadlineOutdatedCount}}</span><span class="text-traitement" style="margin: auto 10px;">Hors délais</span></div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <input type ="text" [ngModel]="wordLong" (change)="findLong(wordLong)">
+<app-plus-button *ngIf="userRights.orderManagement" [data]="actionData"></app-plus-button>

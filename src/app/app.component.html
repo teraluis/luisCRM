@@ -1,0 +1,4 @@
+<div *ngIf="topEnvMessageEnable" class="topinfo-box" [ngClass]="{rb: envName === 'local', hinge: envName === 'local'}" [ngStyle]="{'background-color': color}">
+    <span>Attention, vous êtes sur l'environnement <b>{{ envName }}</b></span> <mat-icon class="close-box" (click)="closeInfoBox()">close</mat-icon>
+</div>
+<router-outlet></router-outlet>

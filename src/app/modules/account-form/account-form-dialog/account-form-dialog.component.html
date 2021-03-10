@@ -1,0 +1,10 @@
+<h4 mat-dialog-title>{{getTitle()}}</h4>
+<div mat-dialog-content class="grey">
+  <app-account-form
+    [data]="data"
+    (cancelAction)="close(undefined)"
+    (removeAccount)="close(null)"
+    (accountSaved)="close($event)"
+    (redirect)="close(undefined)">
+  </app-account-form>
+</div>

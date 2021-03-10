@@ -1,0 +1,5 @@
+<!-- Title bar is inside estate-edit.component -->
+<h4 mat-dialog-title style="height: 28px !important;"></h4>
+<div mat-dialog-content class="grey" style="padding: 0; max-height: 90vh; max-width: 80vw;">
+  <app-estate-edit [data]="data" (cancel)="close(undefined)" (selection)="close($event)" (hasChanged)="returnValue.hasChanged = true"></app-estate-edit>
+</div>

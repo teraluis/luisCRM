@@ -1,0 +1,57 @@
+<mat-card *ngIf="isLoading">
+  <mat-spinner [diameter]="30" style="margin: auto"></mat-spinner>
+</mat-card>
+<mat-card appFileUploadDragDrop (fileDropped)="onFileChange($event)" style="display: flex; flex-direction: column; box-shadow: none; border-radius: 0 0 5px 5px;" *ngIf="!isLoading">
+
+  <mat-form-field appearance="outline" class="upload-element" color="accent">
+    <mat-label>Type de fichier *</mat-label>
+    <mat-select [(ngModel)]="selectedFileType" (selectionChange)="changeType()" [disabled]="typeList.length === 1" #type>
+      <mat-option *ngFor="let type of typeList" [value]="type">{{type}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="upload-element" color="accent" style="margin-bottom: 5px;">
+    <mat-label>Pièce jointe *</mat-label>
+    <input matInput [(ngModel)]="currentFileName" (click)="fileInput.click()" (keydown)="preventEventKeyboard($event)" class="input-file" [ngStyle]="{'pointer-events' : 'visible'}">
+    <mat-icon matPrefix style="cursor: pointer;margin-left: -5px;margin-right: 5px;" *ngIf="!currentFileName" (click)="fileInput.click()" [ngStyle]="{'pointer-events' : 'visible', 'color' : 'black'}">attach_file</mat-icon>
+    <mat-icon matPrefix style="cursor: pointer;margin-left: -5px;margin-right: 5px;" *ngIf="currentFileName" (click)="downloadFile(null)" [ngStyle]="{'pointer-events' : 'visible', 'color' : 'black'}">launch</mat-icon>
+    <mat-icon matSuffix style="cursor: pointer; pointer-events: none; color: #BDBDBD" *ngIf="!isReadyToUpload()">block</mat-icon>
+    <mat-icon matSuffix style="cursor: pointer; color: #575656" (click)="save()" *ngIf="isReadyToUpload()">add_circle_outline</mat-icon>
+  </mat-form-field>
+  <input hidden (change)="onFileChange($event.target.files)" type="file" id="file" #fileInput>
+
+  <div style="display: flex; flex-direction: column;">
+    <mat-accordion>
+      <mat-expansion-panel style="display: none"></mat-expansion-panel>
+      <div *ngFor="let file of attachments" style="display: flex;">
+        <mat-icon class="open-file-element" (click)="downloadFile(file)">launch</mat-icon>
+        <div style="display: flex; width: 100%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <mat-expansion-panel class="list-element" (opened)="viewHistory(file.uuid)">
+            <mat-expansion-panel-header class="list-element-header" matTooltip="{{file.author + ' - ' + (file.created | date:'dd/MM/yy HH:mm:ss' )}}" [collapsedHeight]="'30px'" [expandedHeight]="'30px'">
+              <mat-label class="label-file-element">{{file.fileName + ' - ' + file.type}}</mat-label>
+            </mat-expansion-panel-header>
+            <div style="display: inline-grid; float: left">
+              <div *ngFor="let oldFile of history">
+                <li>
+                  <mat-icon class="open-file-element" (click)="downloadFile(oldFile)">launch</mat-icon>
+                  <mat-label class="old-file-element" matTooltip="{{oldFile.author + ' - ' + (oldFile.created | date:'dd/MM/yy HH:mm:ss' )}}">{{oldFile.fileName}}</mat-label>
+                </li>
+              </div>
+              <div *ngIf="history.length === 0">
+                <mat-progress-spinner *ngIf="loadHistory"
+                  class="example-margin"
+                  color="primary"
+                  mode="indeterminate"
+                  diameter="28">
+                </mat-progress-spinner>
+                <p *ngIf="!loadHistory">Il n'y a pas d'historique pour ce fichier.</p>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </div>
+        <mat-icon class="delete-file-element" (click)="selectedFileType = file.type; selectedObject = file.object; fileInput.click();" matTooltip="Remplacer">cached</mat-icon>
+      </div>
+    </mat-accordion>
+  </div>
+</mat-card>

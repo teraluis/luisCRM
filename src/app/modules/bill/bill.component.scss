@@ -1,0 +1,25 @@
+.prestation-stepper {
+  ::ng-deep .mat-horizontal-stepper-header-container {
+    display: none;
+  }
+}
+
+.mat-dialog-content {
+  max-height: none;
+}
+
+.fixed-bill {
+  text-align: center;
+  font-family: "Lato", "Helvetica Neue", sans-serif;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.fixed-bill td {
+  text-align: center;
+}
+
+.fixed-bill th {
+  text-align: center;
+}

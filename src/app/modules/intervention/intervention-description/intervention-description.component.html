@@ -1,0 +1,80 @@
+<mat-card class="form-card mat-elevation-z0" style="border-radius: 0 0 5px 5px; margin-bottom: 15px; padding: 20px 40px">
+  <form [formGroup]="formGroup" class="form">
+    <div style="display: flex">
+      <h3>Accès au bien</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 3rem;">
+      <!--  Left column  -->
+      <div>
+        <!--  Access conditions -->
+        <mat-form-field  class="form-element middle-element" appearance="outline">
+          <mat-label>Conditions d'accès</mat-label>
+          <mat-select formControlName="accessConditions" [disabled]="disabled">
+            <mat-option *ngFor="let access of accessConditions" value="{{access}}">{{access}}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="!formGroup.controls['accessConditions'].valid && formGroup.controls['accessConditions'].touched">
+          </mat-error>
+        </mat-form-field>
+        <!--  Access details -->
+        <mat-form-field class="form-element middle-element" appearance="outline">
+          <mat-label>Précisions d'accès</mat-label>
+          <textarea matInput matTextareaAutosize matAutosizeMinRows="6" matAutosizeMaxRows="11" formControlName="accessDetails"></textarea>
+          <mat-error *ngIf="!formGroup.controls['accessDetails'].valid && formGroup.controls['accessDetails'].touched">
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <!--  Rigth column  -->
+      <div>
+        <mat-form-field class="form-element middle-element" appearance="outline" *ngIf="isPrestationContainsRaat">
+          <mat-label>Description des travaux</mat-label>
+          <textarea matInput matTextareaAutosize matAutosizeMinRows="10" matAutosizeMaxRows="15" formControlName="workDescription" style="margin-bottom: 1px"></textarea>
+          <mat-error *ngIf="!formGroup.controls['workDescription'].valid && formGroup.controls['workDescription'].touched">
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div *ngIf="(formGroup.dirty || !formGroup.valid || isNewForm) && !disabled" class="form-element" style="display: flex; margin-top: 10px;">
+      <button mat-flat-button style="margin-left: auto; margin-right: 7px" [disabled]="saving" (click)="doCancel()">Annuler</button>
+      <button mat-flat-button color="primary" (click)="doSaveEstate()" [disabled]="saving || !formGroup.valid">Enregistrer</button>
+    </div>
+  </form>
+</mat-card>
+
+<mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngFor="let destination of data.reportDestinations">
+  <mat-expansion-panel-header>
+    <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+      <div style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+        <mat-icon style="margin: auto 5px auto 0;">play_for_work</mat-icon><span style="margin: auto 0 auto 0;">{{getDestinationName(destination)}}</span><span style="margin: auto; color: #8d9093;">Destination d'envoi du rapport</span><span style="visibility: hidden;">{{getDestinationName(destination)}}</span>
+      </div>
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <div style="margin: 15px 45px;">
+    <app-report-destination-form [data]="{mode: 'edit', order: destination.order, disabled: true, defaultData: destination}"></app-report-destination-form>
+  </div>
+</mat-expansion-panel>
+
+<mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngFor="let pwr of data.contacts">
+  <mat-expansion-panel-header>
+    <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;" class="grey">
+      <mat-icon style="margin-right: 5px; margin-top: auto; margin-bottom: auto;">person</mat-icon><span style="margin: auto 0 auto 0;">{{getContactName(pwr.people) + '  -  ' + pwr.people.mobilePhone}}</span><span style="color: #8d9093; margin: auto;">{{pwr.role}}</span><span style="visibility: hidden; margin-right: 5px;">{{getContactName(pwr.people) + '  -  ' + pwr.people.mobilePhone}}</span>
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <div style="margin: 15px 45px;">
+    <app-contact-form [data]="{mode: 'edit', disabled: disabled, deletable: true, roles: contactRoles, defaultData: pwr}"
+                      (contactSaved)="updateContact(pwr, $event)" (removeContact)="removeContact($event)"></app-contact-form>
+  </div>
+</mat-expansion-panel>
+
+<mat-expansion-panel style="margin-bottom: 15px; border-radius: 5px; box-shadow: none;" *ngIf="!disabled && !!data.intervention.asSettled()"
+                     [(expanded)]="showAddContact" (opened)="showAddContact = true" (closed)="showAddContact = false">
+  <mat-expansion-panel-header>
+    <mat-panel-title style="width: 100%; margin: auto; display: flex; min-height: 60px;">
+      <mat-icon style="margin: auto 5px auto auto; color: #8d9093;">add</mat-icon><span style="margin: auto auto auto 0; color: #8d9093;">Ajouter un contact</span>
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <div style="margin: 15px 45px;">
+    <app-contact-form [data]="{mode: 'create_or_search', roles: contactRoles}"
+                      (contactSaved)="addContact($event); showAddContact = false;" (cancelAction)="showAddContact = false;"></app-contact-form>
+  </div>
+</mat-expansion-panel>

@@ -1,0 +1,89 @@
+
+<!-- Case intervention to schedule -->
+<div *ngIf="intervention.isSettled" style="display: grid; grid-template-columns: repeat(2, 1fr); grid-column-gap: 2rem;">
+  <div>
+    <h2>Synchronisation Geoconcept</h2>
+    En cliquant sur le bouton Planifier, les données de l'intervention seront versées dans Geoconcept.
+    Une action est ensuite requise dans Geoconcept pour planifier l'intervention qui sera automatiquement synchronisée entre Calypso et Geoconcept.
+  </div>
+
+  <div style="display: flex">
+    <button [disabled]="isScheduleLoading || disabled" style="margin-left: auto; margin-top:auto; height: 60px" mat-flat-button color="primary" (click)="scheduleIntervention()">Planifier l'intervention dans Géoconcept</button>
+  </div>
+</div>
+
+<!-- Case intervention set to scheduler -->
+<div *ngIf="intervention.isToSchedule" style="display: grid; grid-template-columns: repeat(2, 1fr); grid-column-gap: 2rem;">
+  <div>
+    <h2>Attente planification Geoconcept</h2>
+    L'intervention a été envoyée dans Geoconcept. Vous devez maintenant la planifier.
+    Les informations de la planification seront mises à jour automatiquement sous quelques secondes dans l'intervention en cours de création.
+  </div>
+
+  <div style="display: flex">
+    <div style="margin-left: auto; margin-top:auto; height: 70px; width: 70px;">
+      <mat-icon style="color: darkorange; font-size: 5rem;">warning</mat-icon>
+    </div>
+  </div>
+</div>
+
+<!-- Case intervention schedule -->
+<div *ngIf="intervention.isSchedule || intervention.isIncomplete || intervention.isDone">
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 3rem;">
+
+    <!--  Left column  -->
+    <div >
+      <!--  Heure -->
+      <div class="form-element">
+        <span class="left-info-form-column" >
+          <mat-icon style="font-size: 2.3rem; color: dimgrey">emoji_people</mat-icon>
+        </span>
+        <span class="right-info-form-column" >
+          <div class="info-form-title">Expert</div>
+          <div class="info-form-value">{{ expert?.firstName }} {{ expert?.lastName }}</div>
+        </span>
+      </div>
+
+      <!--  Durée-->
+      <div class="form-element info-form-middle">
+        <span class="left-info-form-column" >
+          <mat-icon style="font-size: 2.3rem; color: dimgrey">calendar_today</mat-icon>
+        </span>
+        <span class="right-info-form-column" >
+          <div class="info-form-title">Date du rendez-vous</div>
+          <div class="info-form-value">{{ getDateFromTimestamp(intervention.asSchedule().planning.startingTime) }}</div>
+        </span>
+      </div>
+    </div>
+
+    <!--  Rigth column  -->
+    <div>
+      <!--  Heure -->
+      <div class="form-element">
+        <span class="left-info-form-column" >
+          <mat-icon style="font-size: 2.3rem; color: dimgrey">schedule</mat-icon>
+        </span>
+        <span class="right-info-form-column" >
+          <div class="info-form-title">Heure du rendez-vous</div>
+          <div class="info-form-value">{{ getTimeFromTimestamp(intervention.asSchedule().planning.startingTime) }}</div>
+        </span>
+      </div>
+
+      <!--  Durée-->
+      <div class="form-element info-form-middle">
+        <span class="left-info-form-column" >
+          <mat-icon style="font-size: 2.3rem; color: dimgrey">hourglass_empty</mat-icon>
+        </span>
+        <span class="right-info-form-column" >
+          <div class="info-form-title">Durée de l'intervention</div>
+          <div class="info-form-value">{{ secondsToHumanReadable(intervention.asSchedule().planning.duration) }}</div>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Forbidden case -->
+<div *ngIf="intervention.isDraft || intervention.isCreated" style="display: grid; grid-template-columns: repeat(2, 1fr); grid-column-gap: 2rem;">
+  <mat-icon>notification_important</mat-icon> Attention, vous ne pouvez pas planifier cette intervention : le niveau d'information est insuffisant.
+</div>
